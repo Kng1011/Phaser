@@ -25,42 +25,68 @@ function preload(){
 }
 
 function create(){
+
+    // Cria as animações de movimento: walkforward, walkbackward, walkleft, walkright
+
     this.anims.create({
-        key: 'walkbackward',
-        frames: this.anims.generateFrameNumbers('player', { start: 0, end: 4 }), // Use os frames de 0 a 4
+        key: 'walkbackwards',
+        frames: this.anims.generateFrameNumbers('player', { start: 0, end: 4 }), // Usa os frames de 0 a 4
         frameRate: 10,
         repeat: -1 // Repete a animação indefinidamente
     });
 
     this.anims.create({
         key: 'walkforward',
-        frames: this.anims.generateFrameNumbers('player', { start: 48, end: 53 }), // Use os frames de 0 a 4
+        frames: this.anims.generateFrameNumbers('player', { start: 48, end: 53 }), 
         frameRate: 10,
         repeat: -1 // Repete a animação indefinidamente
     });
 
     this.anims.create({
         key: 'walkleft',
-        frames: this.anims.generateFrameNumbers('player', { start: 16, end: 20 }), // Use os frames de 0 a 4
+        frames: this.anims.generateFrameNumbers('player', { start: 16, end: 20 }), 
         frameRate: 10,
         repeat: -1 // Repete a animação indefinidamente
     });
 
     this.anims.create({
         key: 'walkright',
-        frames: this.anims.generateFrameNumbers('player', { start: 32, end: 37 }), // Use os frames de 0 a 4
+        frames: this.anims.generateFrameNumbers('player', { start: 32, end: 36 }), 
         frameRate: 10,
         repeat: -1 // Repete a animação indefinidamente
     });
 
+    // Cria as animações de ataque: attackforward, attackbackward, attackleft, attackright
+
     this.anims.create({
-        key: 'attack',
-        frames: this.anims.generateFrameNumbers('player', { start: 5, end: 7 }),
+        key: 'attackbackwards',
+        frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
         frameRate: 10,
         repeat: 0
     });
 
-    attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.anims.create({
+        key: 'attackright',
+        frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
+        frameRate: 10,
+        repeat: 0
+    });
+
+    this.anims.create({
+        key: 'attackleft',
+        frames: this.anims.generateFrameNumbers('player', { start: 21, end: 24 }),
+        frameRate: 10,
+        repeat: 0
+    });
+
+    this.anims.create({
+        key: 'attackforward',
+        frames: this.anims.generateFrameNumbers('player', { start: 54, end: 57 }),
+        frameRate: 10,
+        repeat: 0
+    });
+
+    attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
     // Adiciona a sprite do jogador
     player = this.physics.add.sprite(400, 300, 'player').setScale(2);
@@ -69,35 +95,43 @@ function create(){
     
 }
 
-function update(){
-    // Move o jogador para a esquerda
-    if (cursors.left.isDown){
-        player.setVelocityX(-160);
-        player.anims.play('walkleft', true);
-    }
-    // Move o jogador para a direita
-    else if (cursors.right.isDown){
-        player.setVelocityX(160);
-        player.anims.play('walkright', true);
-    }
-    // Move o jogador para cima
-    else if (cursors.up.isDown){
-        player.setVelocityY(-160);
-        player.anims.play('walkforward', true);
-    }
-    // Move o jogador para baixo
-    else if (cursors.down.isDown){
-        player.setVelocityY(160);
-        player.anims.play('walkbackward', true);
-    }
-    // Faz o jogador parar quando nenhuma tecla está pressionada
-    else{
+let direction = 'forward'; // Variável para rastrear a direção atual
+
+function update() {
+    if (Phaser.Input.Keyboard.JustDown(attackKey)) {
+        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
+            player.anims.play('attack' + direction.toLowerCase(), true);
+            console.log('attack' + direction);
+        }
+    } else if (cursors.left.isDown) {
+        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
+            player.setVelocityX(-160);
+            player.anims.play('walkleft', true);
+            direction = 'left';
+        }
+    } else if (cursors.right.isDown) {
+        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
+            player.setVelocityX(160);
+            player.anims.play('walkright', true);
+            direction = 'right';
+        }
+    } else if (cursors.up.isDown) {
+        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
+            player.setVelocityY(-160);
+            player.anims.play('walkforward', true);
+            direction = 'forward';
+        }
+    } else if (cursors.down.isDown) {
+        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
+            player.setVelocityY(160);
+            player.anims.play('walkbackwards', true);
+            direction = 'backwards';
+        }
+    } else {
         player.setVelocityX(0);
         player.setVelocityY(0);
-        player.anims.stop(); // Para a animação
-    }
-
-    if (Phaser.Input.Keyboard.JustDown(attackKey)){
-        player.anims.play('attack', true);
+        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
+            player.anims.stop();
+        }
     }
 }
