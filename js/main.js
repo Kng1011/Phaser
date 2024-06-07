@@ -23,14 +23,21 @@ let direction = 'forward'; // Variável para rastrear a direção atual do jogad
 let darkness; // Variável para a escuridão
 let lightMask; // Variável para a máscara de iluminação
 let attackKey;
+let fireballKey;
 let enemy;
 let enemyHealth = 100; // Vida inicial do inimigo
 let enemyHealthBar;
+let enemyAttackRange = 50; // Alcance de ataque do inimigo
+let fireballs;
+let canShootFireball = true;
+let fireballCooldownTime = 2000; // 2 segundos
+let fireballCooldownGraphic;
 
 function preload() {
     this.load.image('tiles', 'assets/tileset.png');
     this.load.tilemapTiledJSON('map', 'assets/map.json');
     this.load.spritesheet('player', 'assets/player.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('fireball', 'assets/fireball.png', { frameWidth: 64, frameHeight: 32 });
 }
 
 function create() {
@@ -125,7 +132,22 @@ function create() {
         repeat: -1
     });
 
+    this.anims.create({
+        key: 'enemyAttack',
+        frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'fireballAnim',
+        frames: this.anims.generateFrameNumbers('fireball', { start: 0, end: 3 }),
+        frameRate: 10,
+        repeat: -1
+    });
+
     attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
 
     // Adiciona a sprite do jogador
     player = this.physics.add.sprite(400, 300, 'player').setScale(2);
@@ -146,6 +168,15 @@ function create() {
 
     // Adiciona inimigo
     spawnEnemy.call(this);
+
+    // Cria o grupo de fireballs
+    fireballs = this.physics.add.group({
+        defaultKey: 'fireball',
+        maxSize: 10
+    });
+
+    // Adiciona o indicador de cooldown do fireball
+    fireballCooldownGraphic = this.add.image(60, 20, 'fireball').setScale(2).setFrame(0);
 }
 
 function update() {
@@ -200,11 +231,25 @@ function update() {
         }
     }
 
+    // Controle do ataque de fireball
+    if (Phaser.Input.Keyboard.JustDown(fireballKey) && canShootFireball) {
+        shootFireball.call(this);
+    }
+
     // Atualiza a posição do inimigo para seguir o jogador
     if (enemy) {
-        this.physics.moveToObject(enemy, player, 100);
-        // Atualiza a animação do inimigo baseado na direção
-        updateEnemyAnimation.call(this);
+        const distance = Phaser.Math.Distance.Between(player.x, player.y, enemy.x, enemy.y);
+        if (distance < enemyAttackRange) {
+            // Inimigo ataca
+            if (!enemy.anims.isPlaying || enemy.anims.currentAnim.key !== 'enemyAttack') {
+                enemy.anims.play('enemyAttack', true);
+            }
+        } else {
+            // Inimigo segue o jogador
+            this.physics.moveToObject(enemy, player, 100);
+            // Atualiza a animação do inimigo baseado na direção
+            updateEnemyAnimation.call(this);
+        }
     }
 
     // Atualiza a barra de vida do inimigo
@@ -212,7 +257,9 @@ function update() {
 }
 
 function spawnEnemy() {
-    enemy = this.physics.add.sprite(100, 100, 'player').setScale(2);
+    const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
+    const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
+    enemy = this.physics.add.sprite(randomX, randomY, 'player').setScale(2);
     enemyHealth = 100;
 
     // Cria a barra de vida do inimigo
@@ -221,7 +268,7 @@ function spawnEnemy() {
 }
 
 function dealDamage() {
-    if (enemy && Phaser.Math.Distance.Between(player.x, player.y, enemy.x, enemy.y) < 50) {
+    if (enemy && Phaser.Math.Distance.Between(player.x, player.y, enemy.x, enemy.y) < enemyAttackRange) {
         enemyHealth -= 25;
         if (enemyHealth <= 0) {
             enemy.destroy();
@@ -248,5 +295,42 @@ function updateEnemyAnimation() {
         enemy.anims.play('enemyWalkForward', true);
     } else if (enemy.body.velocity.y < 0) {
         enemy.anims.play('enemyWalkBackwards', true);
+    }
+}
+
+function shootFireball() {
+    if (!canShootFireball) return;
+
+    canShootFireball = false;
+    fireballCooldownGraphic.setTint(0xff0000);
+
+    // Cria a fireball
+    const fireball = fireballs.get(player.x, player.y, 'fireball').setScale(2);
+    fireball.anims.play('fireballAnim');
+    this.physics.add.collider(fireball, enemy, hitEnemy, null, this);
+
+    // Direção do disparo da fireball
+    if (enemy) {
+        this.physics.moveToObject(fireball, enemy, 300);
+    }
+
+    // Configura o cooldown da fireball
+    this.time.addEvent({
+        delay: fireballCooldownTime,
+        callback: () => {
+            canShootFireball = true;
+            fireballCooldownGraphic.clearTint();
+        },
+        callbackScope: this
+    });
+}
+
+function hitEnemy(fireball, enemy) {
+    fireball.destroy();
+    enemyHealth -= 100;
+    if (enemyHealth <= 0) {
+        enemy.destroy();
+        enemyHealthBar.destroy();
+        spawnEnemy.call(this);
     }
 }
