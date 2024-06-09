@@ -38,6 +38,7 @@ function preload() {
     this.load.tilemapTiledJSON('map', 'assets/map.json');
     this.load.spritesheet('player', 'assets/player.png', { frameWidth: 32, frameHeight: 32 });
     this.load.spritesheet('fireball', 'assets/fireball.png', { frameWidth: 64, frameHeight: 32 });
+    this.load.image('Frame', 'assets/Frame.png');
 }
 
 function create() {
@@ -166,6 +167,14 @@ function create() {
 
     cursors = this.input.keyboard.createCursorKeys();
 
+    // Mapeia as teclas WASD
+    this.wasd = {
+        up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+        down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+        left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+        right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+    };
+
     // Adiciona inimigo
     spawnEnemy.call(this);
 
@@ -175,9 +184,17 @@ function create() {
         maxSize: 10
     });
 
-    // Adiciona o indicador de cooldown do fireball
-    fireballCooldownGraphic = this.add.image(60, 20, 'fireball').setScale(2).setFrame(0);
+    // Adiciona a moldura
+    const frame = this.add.sprite(60, 35, 'Frame').setScale(2.5);
+    // Adiciona o gráfico de cooldown da habilidade um pouco abaixo da moldura
+    fireballCooldownGraphic = this.add.sprite(50, 35, 'fireball').setScale(1.8); // Mudança na posição Y de 20 para 70
+
+    // Define a profundidade para garantir que a skill fique sobre a moldura
+    frame.setDepth(1);
+    fireballCooldownGraphic.setDepth(2);
+
 }
+
 
 function update() {
     // Limpa a escuridão e redesenha
@@ -194,41 +211,32 @@ function update() {
     darkness.mask = new Phaser.Display.Masks.BitmapMask(this, lightMask);
 
     // Controle do jogador
+    player.setVelocity(0);
+
+    if (cursors.left.isDown || this.wasd.left.isDown) {
+        player.setVelocityX(-160);
+        player.anims.play('walkleft', true);
+        direction = 'left';
+    } else if (cursors.right.isDown || this.wasd.right.isDown) {
+        player.setVelocityX(160);
+        player.anims.play('walkright', true);
+        direction = 'right';
+    }
+
+    if (cursors.up.isDown || this.wasd.up.isDown) {
+        player.setVelocityY(-160);
+        player.anims.play('walkforward', true);
+        direction = 'forward';
+    } else if (cursors.down.isDown || this.wasd.down.isDown) {
+        player.setVelocityY(160);
+        player.anims.play('walkbackwards', true);
+        direction = 'backwards';
+    }
+
+    // Controle do ataque de melee
     if (Phaser.Input.Keyboard.JustDown(attackKey)) {
-        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
-            player.anims.play('attack' + direction.toLowerCase(), true);
-            dealDamage.call(this);
-        }
-    } else if (cursors.left.isDown) {
-        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
-            player.setVelocityX(-160);
-            player.anims.play('walkleft', true);
-            direction = 'left';
-        }
-    } else if (cursors.right.isDown) {
-        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
-            player.setVelocityX(160);
-            player.anims.play('walkright', true);
-            direction = 'right';
-        }
-    } else if (cursors.up.isDown) {
-        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
-            player.setVelocityY(-160);
-            player.anims.play('walkforward', true);
-            direction = 'forward';
-        }
-    } else if (cursors.down.isDown) {
-        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
-            player.setVelocityY(160);
-            player.anims.play('walkbackwards', true);
-            direction = 'backwards';
-        }
-    } else {
-        player.setVelocityX(0);
-        player.setVelocityY(0);
-        if (!player.anims.isPlaying || player.anims.currentAnim.key.indexOf('attack') === -1) {
-            player.anims.stop();
-        }
+        player.anims.play('attack' + direction.toLowerCase(), true);
+        dealDamage.call(this);
     }
 
     // Controle do ataque de fireball
@@ -255,6 +263,7 @@ function update() {
     // Atualiza a barra de vida do inimigo
     updateEnemyHealthBar.call(this);
 }
+
 
 function spawnEnemy() {
     const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
