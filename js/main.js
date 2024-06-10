@@ -2,6 +2,7 @@ const config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
+     parent: 'gameContainer',
     physics: {
         default: 'arcade',
         arcade: {
@@ -24,14 +25,24 @@ let darkness; // Variável para a escuridão
 let lightMask; // Variável para a máscara de iluminação
 let attackKey;
 let fireballKey;
+
+// Variáveis para o inimigo
 let enemy;
 let enemyHealth = 100; // Vida inicial do inimigo
 let enemyHealthBar;
 let enemyAttackRange = 50; // Alcance de ataque do inimigo
+
+// Variáveis para a habilidade de fireball
 let fireballs;
 let canShootFireball = true;
 let fireballCooldownTime = 2000; // 2 segundos
 let fireballCooldownGraphic;
+
+// Variáveis para a barra de vida do jogador
+var playerHealth = 100; // Vida inicial do jogador
+var playerHealthBar;
+var playerHealthBarRed;
+
 
 function preload() {
     this.load.image('tiles', 'assets/tileset.png');
@@ -39,6 +50,8 @@ function preload() {
     this.load.spritesheet('player', 'assets/player.png', { frameWidth: 32, frameHeight: 32 });
     this.load.spritesheet('fireball', 'assets/fireball.png', { frameWidth: 64, frameHeight: 32 });
     this.load.image('Frame', 'assets/Frame.png');
+    this.load.image('lifebar1', 'assets/Lifebar1.png');
+    this.load.image('lifebar2', 'assets/Lifebar2.png');
 }
 
 function create() {
@@ -165,6 +178,10 @@ function create() {
     lightMask.fillCircle(0, 0, 100);
     lightMask.setBlendMode(Phaser.BlendModes.ERASE);
 
+    // Cria a máscara de luz
+    const mask = darkness.createBitmapMask(lightMask);
+    layer1.setMask(mask);
+
     cursors = this.input.keyboard.createCursorKeys();
 
     // Mapeia as teclas WASD
@@ -185,16 +202,20 @@ function create() {
     });
 
     // Adiciona a moldura
-    const frame = this.add.sprite(60, 35, 'Frame').setScale(2.5);
+    const frame = this.add.sprite(60, 560, 'Frame').setScale(2.5);
     // Adiciona o gráfico de cooldown da habilidade um pouco abaixo da moldura
-    fireballCooldownGraphic = this.add.sprite(50, 35, 'fireball').setScale(1.8); // Mudança na posição Y de 20 para 70
+    fireballCooldownGraphic = this.add.sprite(50, 560, 'fireball').setScale(1.8); // Mudança na posição Y de 20 para 70
 
     // Define a profundidade para garantir que a skill fique sobre a moldura
-    frame.setDepth(1);
-    fireballCooldownGraphic.setDepth(2);
+    frame.setDepth(10);
+    fireballCooldownGraphic.setDepth(11);
 
+    // Adiciona a barra de vida do jogador
+    playerHealthBarBg = this.add.sprite(0, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
+    playerHealthBar = this.add.sprite(0, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
+    playerHealthBarBg.setDepth(10);
+    playerHealthBar.setDepth(11);
 }
-
 
 function update() {
     // Limpa a escuridão e redesenha
@@ -206,9 +227,6 @@ function update() {
     lightMask.clear();
     lightMask.fillStyle(0xffffff, 1);
     lightMask.fillCircle(player.x, player.y, 100);
-
-    // Aplica a máscara de iluminação à escuridão
-    darkness.mask = new Phaser.Display.Masks.BitmapMask(this, lightMask);
 
     // Controle do jogador
     player.setVelocity(0);
@@ -251,6 +269,10 @@ function update() {
             // Inimigo ataca
             if (!enemy.anims.isPlaying || enemy.anims.currentAnim.key !== 'enemyAttack') {
                 enemy.anims.play('enemyAttack', true);
+                // Reduz a vida do jogador
+                if (playerHealth > 0) {
+                    playerHealth -= 5;
+                }
             }
         } else {
             // Inimigo segue o jogador
@@ -260,10 +282,18 @@ function update() {
         }
     }
 
+    // Atualiza a barra de vida do jogador
+    updatePlayerHealthBar.call(this);
+
     // Atualiza a barra de vida do inimigo
     updateEnemyHealthBar.call(this);
 }
 
+function updatePlayerHealthBar() {
+    // Atualiza a barra de vida do jogador com base na saúde atual
+    const healthPercentage = playerHealth / 100;
+    playerHealthBar.displayWidth = playerHealthBarBg.width * healthPercentage;
+}
 
 function spawnEnemy() {
     const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
@@ -319,9 +349,25 @@ function shootFireball() {
     this.physics.add.collider(fireball, enemy, hitEnemy, null, this);
 
     // Direção do disparo da fireball
-    if (enemy) {
-        this.physics.moveToObject(fireball, enemy, 300);
+    let velocityX = 0;
+    let velocityY = 0;
+
+    switch (direction) {
+        case 'left':
+            velocityX = -300;
+            break;
+        case 'right':
+            velocityX = 300;
+            break;
+        case 'forward':
+            velocityY = -300;
+            break;
+        case 'backwards':
+            velocityY = 300;
+            break;
     }
+
+    fireball.setVelocity(velocityX, velocityY);
 
     // Configura o cooldown da fireball
     this.time.addEvent({
