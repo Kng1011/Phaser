@@ -89,6 +89,7 @@ export default class GameScene extends Phaser.Scene {
         this.lightMask.fillCircle(this.player.x, this.player.y, 100);
         this.player.setVelocity(0);
 
+
         if (this.cursors.left.isDown || this.wasd.left.isDown) {
             this.player.setVelocityX(-160);
             this.player.anims.play('walkleft', true);
@@ -114,7 +115,7 @@ export default class GameScene extends Phaser.Scene {
             this.dealDamage();
         }
 
-        if (Phaser.Input.Keyboard.JustDown(this.fireballKey) && this.canShootFireball) {
+        if (Phaser.Input.Keyboard.JustDown(this.fireballKey) && this.canShootFireball ) {
             this.shootFireball();
         }
 
@@ -292,15 +293,19 @@ this.anims.create({
         switch (this.direction) {
             case 'left':
                 velocityX = -300;
+                fireball.angle = 180;  // Aponta para a esquerda
                 break;
             case 'right':
                 velocityX = 300;
+                fireball.angle = 0;    // Aponta para a direita (padrão)
                 break;
             case 'forward':
                 velocityY = -300;
+                fireball.angle = -90;  // Aponta para cima
                 break;
             case 'backwards':
                 velocityY = 300;
+                fireball.angle = 90;   // Aponta para baixo
                 break;
         }
         fireball.setVelocity(velocityX, velocityY);
