@@ -66,7 +66,7 @@ export default class GameScene extends Phaser.Scene {
         this.spawnEnemy();
         this.fireballs = this.physics.add.group({
             defaultKey: 'fireball',
-            maxSize: 10
+            maxSize: 100
         });
 
         const frame = this.add.sprite(60, 560, 'Frame').setScale(2.5);
@@ -78,6 +78,7 @@ export default class GameScene extends Phaser.Scene {
         this.playerHealthBar = this.add.sprite(0, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBarBg.setDepth(10);
         this.playerHealthBar.setDepth(11);
+
     }
 
     update() {
@@ -89,36 +90,54 @@ export default class GameScene extends Phaser.Scene {
         this.lightMask.fillCircle(this.player.x, this.player.y, 100);
         this.player.setVelocity(0);
 
-
+        let moving = false;
+        let attack = false;
+    
         if (this.cursors.left.isDown || this.wasd.left.isDown) {
             this.player.setVelocityX(-160);
             this.player.anims.play('walkleft', true);
             this.direction = 'left';
+            moving = true;
         } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
             this.player.setVelocityX(160);
             this.player.anims.play('walkright', true);
             this.direction = 'right';
+            moving = true;
         }
-
+    
         if (this.cursors.up.isDown || this.wasd.up.isDown) {
             this.player.setVelocityY(-160);
             this.player.anims.play('walkforward', true);
             this.direction = 'forward';
+            moving = true;
         } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
             this.player.setVelocityY(160);
             this.player.anims.play('walkbackwards', true);
             this.direction = 'backwards';
+            moving = true;
         }
-
+    
         if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
+            attack = true;
             this.player.anims.play('attack' + this.direction.toLowerCase(), true);
-            this.dealDamage();
+            this.dealDamage();  
+                
         }
 
-        if (Phaser.Input.Keyboard.JustDown(this.fireballKey) && this.canShootFireball ) {
+        if (this.player.anims.currentAnim && this.player.anims.currentAnim.key.startsWith('attack') && this.player.anims.isPlaying) {
+            attack = true;
+        } else {
+            attack = false;
+        }
+
+        if (!moving && !attack) {
+            this.player.anims.stop();
+        }
+    
+        if (Phaser.Input.Keyboard.JustDown(this.fireballKey) && this.canShootFireball) {
             this.shootFireball();
         }
-
+    
         if (this.enemy) {
             const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y);
             if (distance < this.enemyAttackRange) {
@@ -132,11 +151,18 @@ export default class GameScene extends Phaser.Scene {
                 this.physics.moveToObject(this.enemy, this.player, 100);
                 this.updateEnemyAnimation();
             }
+    
+            // Verificação de visibilidade do inimigo
+            const lightRadius = 100;
+            const isEnemyVisible = distance <= lightRadius;
+            this.enemy.setVisible(isEnemyVisible);
+            this.enemyHealthBar.setVisible(isEnemyVisible);
         }
-
+    
         this.updatePlayerHealthBar();
         this.updateEnemyHealthBar();
     }
+    
 
     setupAnimations() {
         
@@ -191,7 +217,7 @@ this.anims.create({
 
 this.anims.create({
     key: 'attackforward',
-    frames: this.anims.generateFrameNumbers('player', { start: 54, end: 57 }),
+    frames: this.anims.generateFrameNumbers('player', { start: 53, end: 56 }),
     frameRate: 10,
     repeat: 0
 });
