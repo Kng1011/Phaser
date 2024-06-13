@@ -19,6 +19,9 @@ export default class GameScene extends Phaser.Scene {
         this.playerHealth = 100;
         this.playerHealthBar = null;
         this.playerHealthBarRed = null;
+        this.lightRadius = 100; // Inicializa o raio da luz
+        this.lightDecreaseRate = 3; // Taxa de diminuição do raio da luz por segundo
+        this.maxLightRadius = 200; // Tamanho máximo da luz
     }
 
     preload() {
@@ -48,7 +51,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.lightMask = this.make.graphics();
         this.lightMask.fillStyle(0xffffff, 1);
-        this.lightMask.fillCircle(0, 0, 100);
+        this.lightMask.fillCircle(0, 0, this.lightRadius);
         this.lightMask.setBlendMode(Phaser.BlendModes.ERASE);
 
         const mask = this.darkness.createBitmapMask(this.lightMask);
@@ -79,6 +82,13 @@ export default class GameScene extends Phaser.Scene {
         this.playerHealthBarBg.setDepth(10);
         this.playerHealthBar.setDepth(11);
 
+        // Reduzir o raio da luz ao longo do tempo
+        this.time.addEvent({
+            delay: 1000,
+            callback: this.decreaseLightRadius,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     update() {
@@ -87,7 +97,7 @@ export default class GameScene extends Phaser.Scene {
         this.darkness.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
         this.lightMask.clear();
         this.lightMask.fillStyle(0xffffff, 1);
-        this.lightMask.fillCircle(this.player.x, this.player.y, 100);
+        this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
         this.player.setVelocity(0);
 
         let moving = false;
@@ -151,10 +161,9 @@ export default class GameScene extends Phaser.Scene {
                 this.physics.moveToObject(this.enemy, this.player, 100);
                 this.updateEnemyAnimation();
             }
-    
+
             // Verificação de visibilidade do inimigo
-            const lightRadius = 100;
-            const isEnemyVisible = distance <= lightRadius;
+            const isEnemyVisible = distance <= this.lightRadius;
             this.enemy.setVisible(isEnemyVisible);
             this.enemyHealthBar.setVisible(isEnemyVisible);
         }
@@ -166,104 +175,104 @@ export default class GameScene extends Phaser.Scene {
 
     setupAnimations() {
         
-this.anims.create({
-    key: 'walkbackwards',
-    frames: this.anims.generateFrameNumbers('player', { start: 0, end: 4 }),
-    frameRate: 10,
-    repeat: -1
-});
+        this.anims.create({
+            key: 'walkbackwards',
+            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 4 }),
+            frameRate: 10,
+            repeat: -1
+        });
 
-this.anims.create({
-    key: 'walkforward',
-    frames: this.anims.generateFrameNumbers('player', { start: 48, end: 53 }),
-    frameRate: 10,
-    repeat: -1
-});
+        this.anims.create({
+            key: 'walkforward',
+            frames: this.anims.generateFrameNumbers('player', { start: 48, end: 53 }),
+            frameRate: 10,
+            repeat: -1
+        });
 
-this.anims.create({
-    key: 'walkleft',
-    frames: this.anims.generateFrameNumbers('player', { start: 16, end: 20 }),
-    frameRate: 10,
-    repeat: -1
-});
+        this.anims.create({
+            key: 'walkleft',
+            frames: this.anims.generateFrameNumbers('player', { start: 16, end: 20 }),
+            frameRate: 10,
+            repeat: -1
+        });
 
-this.anims.create({
-    key: 'walkright',
-    frames: this.anims.generateFrameNumbers('player', { start: 32, end: 36 }),
-    frameRate: 10,
-    repeat: -1
-});
+        this.anims.create({
+            key: 'walkright',
+            frames: this.anims.generateFrameNumbers('player', { start: 32, end: 36 }),
+            frameRate: 10,
+            repeat: -1
+        });
 
-this.anims.create({
-    key: 'attackbackwards',
-    frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
-    frameRate: 10,
-    repeat: 0
-});
+        this.anims.create({
+            key: 'attackbackwards',
+            frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
+            frameRate: 10,
+            repeat: 0
+        });
 
-this.anims.create({
-    key: 'attackright',
-    frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
-    frameRate: 10,
-    repeat: 0
-});
+        this.anims.create({
+            key: 'attackright',
+            frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
+            frameRate: 10,
+            repeat: 0
+        });
 
-this.anims.create({
-    key: 'attackleft',
-    frames: this.anims.generateFrameNumbers('player', { start: 21, end: 24 }),
-    frameRate: 10,
-    repeat: 0
-});
+        this.anims.create({
+            key: 'attackleft',
+            frames: this.anims.generateFrameNumbers('player', { start: 21, end: 24 }),
+            frameRate: 10,
+            repeat: 0
+        });
 
-this.anims.create({
-    key: 'attackforward',
-    frames: this.anims.generateFrameNumbers('player', { start: 53, end: 56 }),
-    frameRate: 10,
-    repeat: 0
-});
+        this.anims.create({
+            key: 'attackforward',
+            frames: this.anims.generateFrameNumbers('player', { start: 53, end: 56 }),
+            frameRate: 10,
+            repeat: 0
+        });
 
-// Cria as animações de movimento do inimigo usando a spritesheet do jogador
-this.anims.create({
-    key: 'enemyWalkBackwards',
-    frames: this.anims.generateFrameNumbers('player', { start: 0, end: 7 }),
-    frameRate: 10,
-    repeat: -1
-});
+        // Cria as animações de movimento do inimigo usando a spritesheet do jogador
+        this.anims.create({
+            key: 'enemyWalkBackwards',
+            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        });
 
-this.anims.create({
-    key: 'enemyWalkForward',
-    frames: this.anims.generateFrameNumbers('player', { start: 48, end: 55 }),
-    frameRate: 10,
-    repeat: -1
-});
+        this.anims.create({
+            key: 'enemyWalkForward',
+            frames: this.anims.generateFrameNumbers('player', { start: 48, end: 55 }),
+            frameRate: 10,
+            repeat: -1
+        });
 
-this.anims.create({
-    key: 'enemyWalkRight',
-    frames: this.anims.generateFrameNumbers('player', { start: 32, end: 39 }),
-    frameRate: 10,
-    repeat: -1
-});
+        this.anims.create({
+            key: 'enemyWalkRight',
+            frames: this.anims.generateFrameNumbers('player', { start: 32, end: 39 }),
+            frameRate: 10,
+            repeat: -1
+        });
 
-this.anims.create({
-    key: 'enemyWalkLeft',
-    frames: this.anims.generateFrameNumbers('player', { start: 16, end: 23 }),
-    frameRate: 10,
-    repeat: -1
-});
+        this.anims.create({
+            key: 'enemyWalkLeft',
+            frames: this.anims.generateFrameNumbers('player', { start: 16, end: 23 }),
+            frameRate: 10,
+            repeat: -1
+        });
 
-this.anims.create({
-    key: 'enemyAttack',
-    frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
-    frameRate: 10,
-    repeat: -1
-});
+        this.anims.create({
+            key: 'enemyAttack',
+            frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
+            frameRate: 10,
+            repeat: -1
+        });
 
-this.anims.create({
-    key: 'fireballAnim',
-    frames: this.anims.generateFrameNumbers('fireball', { start: 0, end: 3 }),
-    frameRate: 10,
-    repeat: -1
-});
+        this.anims.create({
+            key: 'fireballAnim',
+            frames: this.anims.generateFrameNumbers('fireball', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
     }
 
     spawnEnemy() {
@@ -282,6 +291,7 @@ this.anims.create({
                 this.enemy.destroy();
                 this.enemyHealthBar.destroy();
                 this.spawnEnemy();
+                this.increaseLightRadius();
             }
         }
     }
@@ -358,5 +368,29 @@ this.anims.create({
     updatePlayerHealthBar() {
         const healthPercentage = this.playerHealth / 100;
         this.playerHealthBar.displayWidth = this.playerHealthBarBg.width * healthPercentage;
+    }
+
+    increaseLightRadius() {
+        if (this.lightRadius < this.maxLightRadius) {
+            this.lightRadius += 20; // Ajuste o valor conforme necessário
+            if (this.lightRadius > this.maxLightRadius) {
+                this.lightRadius = this.maxLightRadius;
+            }
+            this.lightMask.clear();
+            this.lightMask.fillStyle(0xffffff, 1);
+            this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
+        }
+    }
+
+    decreaseLightRadius() {
+        if (this.lightRadius > 0) {
+            this.lightRadius -= this.lightDecreaseRate;
+            if (this.lightRadius < 0) {
+                this.lightRadius = 0;
+            }
+            this.lightMask.clear();
+            this.lightMask.fillStyle(0xffffff, 1);
+            this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
+        }
     }
 }
