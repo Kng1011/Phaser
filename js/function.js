@@ -22,6 +22,7 @@ export default class GameScene extends Phaser.Scene {
         this.lightRadius = 100; // Inicializa o raio da luz
         this.lightDecreaseRate = 3; // Taxa de diminuição do raio da luz por segundo
         this.maxLightRadius = 200; // Tamanho máximo da luz
+        this.minLightRadius = 50;
     }
 
     preload() {
@@ -383,10 +384,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     decreaseLightRadius() {
-        if (this.lightRadius > 0) {
+        if (this.lightRadius > this.minLightRadius) {
             this.lightRadius -= this.lightDecreaseRate;
-            if (this.lightRadius < 0) {
-                this.lightRadius = 0;
+            if (this.lightRadius < this.minLightRadius) {
+                this.lightRadius = this.minLightRadius;
             }
             this.lightMask.clear();
             this.lightMask.fillStyle(0xffffff, 1);
