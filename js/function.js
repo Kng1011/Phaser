@@ -97,13 +97,42 @@ export default class GameScene extends Phaser.Scene {
         this.playerHealthBarBg.setDepth(10);
         this.playerHealthBar.setDepth(11);
 
-        // Reduzir o raio da luz ao longo do tempo
+        
         this.time.addEvent({
             delay: 1000,
             callback: this.decreaseLightRadius,
             callbackScope: this,
             loop: true
         });
+
+
+    this.timerValue = 60; 
+    this.timerText = this.add.text(700, 20, `Tempo: ${this.timerValue}`, {
+        font: '20px Arial',
+        fill: '#ffffff', 
+    }).setOrigin(1, 0); 
+
+    
+    this.time.addEvent({
+        delay: 1000,
+        callback: this.updateTimer,
+        callbackScope: this,
+        loop: true
+    });
+    }
+
+    updateTimer() {
+        if (this.timerValue > 0) {
+            this.timerValue--;
+            this.timerText.setText(`Tempo: ${this.formatTime(this.timerValue)}`);
+        } 
+    }
+
+    formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const partInSeconds = seconds % 60;
+        const partInSecondsStr = partInSeconds.toString().padStart(2, '0');
+        return `${minutes}:${partInSecondsStr}`;
     }
 
     update() {
@@ -117,6 +146,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.fireballs.children.each(function(fireball) {
             if (fireball.active) {
+                this.lightMask.fillStyle(fireball.fireballLightColor, 1);
                 this.lightMask.fillCircle(fireball.x, fireball.y, fireball.fireballLightRadius);
             }
         }, this);
@@ -347,6 +377,7 @@ export default class GameScene extends Phaser.Scene {
     fireball.anims.play('fireballAnim');
 
     fireball.fireballLightRadius = this.fireballLightRadius;
+    fireball.fireballLightColor =  0xffa500;
 
     this.physics.add.collider(fireball, this.enemy, this.hitEnemy, null, this);
 
