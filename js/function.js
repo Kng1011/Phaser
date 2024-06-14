@@ -25,6 +25,8 @@ export default class GameScene extends Phaser.Scene {
         this.minLightRadius = 50;
         this.fireballLightMask = null;
         this.fireballLightRadius = 50;
+        this.killCount = 0;
+        this.maxKills = 10;
     }
 
     preload() {
@@ -81,21 +83,21 @@ export default class GameScene extends Phaser.Scene {
         this.fireballLightMask.fillCircle(0, 0, this.fireballLightRadius);
         this.fireballLightMask.setBlendMode(Phaser.BlendModes.ERASE);
         
-        // Supondo que você tenha um grupo de bolas de fogo
         this.fireballs.children.each(function(fireball) {
             fireball.setMask(this.darkness.createBitmapMask(this.fireballLightMask));
         }, this);
-
 
         const frame = this.add.sprite(60, 560, 'Frame').setScale(2.5);
         this.fireballCooldownGraphic = this.add.sprite(50, 560, 'fireball').setScale(1.8);
         frame.setDepth(10);
         this.fireballCooldownGraphic.setDepth(11);
 
-        this.playerHealthBarBg = this.add.sprite(0, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
-        this.playerHealthBar = this.add.sprite(0, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
+        this.playerHealthBarBg = this.add.sprite(60, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
+        this.playerHealthBar = this.add.sprite(60, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBarBg.setDepth(10);
         this.playerHealthBar.setDepth(11);
+
+        this.updatePlayerHealthBar();
 
         
         this.time.addEvent({
@@ -105,20 +107,24 @@ export default class GameScene extends Phaser.Scene {
             loop: true
         });
 
+        this.killCountText = this.add.text(760, 10, `Kills: ${this.killCount} / ${this.maxKills}`, {
+            font: '20px Arial',
+            fill: '#ffffff',
+        }).setOrigin(1, 0);
 
-    this.timerValue = 60; 
-    this.timerText = this.add.text(700, 20, `Tempo: ${this.timerValue}`, {
-        font: '20px Arial',
-        fill: '#ffffff', 
-    }).setOrigin(1, 0); 
+        this.timerValue = 60; 
+        this.timerText = this.add.text(760, 50, `Tempo: ${this.timerValue}`, {
+            font: '20px Arial',
+            fill: '#ffffff', 
+        }).setOrigin(1, 0); 
 
     
-    this.time.addEvent({
-        delay: 1000,
-        callback: this.updateTimer,
-        callbackScope: this,
-        loop: true
-    });
+        this.time.addEvent({
+            delay: 1000,
+            callback: this.updateTimer,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     updateTimer() {
@@ -221,6 +227,9 @@ export default class GameScene extends Phaser.Scene {
     
         this.updatePlayerHealthBar();
         this.updateEnemyHealthBar();
+
+        this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
+
     }
     
 
@@ -343,6 +352,7 @@ export default class GameScene extends Phaser.Scene {
                 this.enemyHealthBar.destroy();
                 this.spawnEnemy();
                 this.increaseLightRadius();
+                this.incrementKillCount();
             }
         }
     }
@@ -413,20 +423,22 @@ export default class GameScene extends Phaser.Scene {
 }
 
     
-hitEnemy(fireball, enemy) {
-    fireball.destroy();
-    this.enemyHealth -= 100;
-    if (this.enemyHealth <= 0) {
-        this.enemy.destroy();
-        this.enemyHealthBar.destroy();
-        this.spawnEnemy();
+    hitEnemy(fireball, enemy) {
+        fireball.destroy();
+        this.enemyHealth -= 100;
+        if (this.enemyHealth <= 0) {
+            this.enemy.destroy();
+            this.enemyHealthBar.destroy();
+            this.spawnEnemy();
+            this.incrementKillCount();
+        }
     }
-}
 
 
     updatePlayerHealthBar() {
         const healthPercentage = this.playerHealth / 100;
-        this.playerHealthBar.displayWidth = this.playerHealthBarBg.width * healthPercentage;
+        const newWidth = this.playerHealthBarBg.displayWidth * healthPercentage;
+        this.playerHealthBar.displayWidth = newWidth;
     }
 
     increaseLightRadius() {
@@ -451,5 +463,20 @@ hitEnemy(fireball, enemy) {
             this.lightMask.fillStyle(0xffffff, 1);
             this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
         }
+    }
+
+    incrementKillCount() {
+        this.killCount += 1;
+        if (this.killCount >= this.maxKills) {
+            this.handleMaxKillsReached();
+        }
+    }
+
+    handleMaxKillsReached() {
+        // Aqui você pode adicionar uma ação quando o limite de kills for atingido
+        // Por exemplo, mostrar uma mensagem ou terminar o jogo
+        console.log("Limite máximo de kills atingido!");
+        this.scene.pause(); // Pausa o jogo
+        // Você pode adicionar mais lógica aqui, como mostrar uma tela de vitória
     }
 }
