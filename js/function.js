@@ -14,15 +14,17 @@ export default class GameScene extends Phaser.Scene {
         this.enemyAttackRange = 50;
         this.fireballs = null;
         this.canShootFireball = true;
-        this.fireballCooldownTime = 2000; // 2 segundos
+        this.fireballCooldownTime = 2000; 
         this.fireballCooldownGraphic = null;
         this.playerHealth = 100;
         this.playerHealthBar = null;
         this.playerHealthBarRed = null;
-        this.lightRadius = 100; // Inicializa o raio da luz
-        this.lightDecreaseRate = 3; // Taxa de diminuição do raio da luz por segundo
-        this.maxLightRadius = 200; // Tamanho máximo da luz
+        this.lightRadius = 100; 
+        this.lightDecreaseRate = 3; 
+        this.maxLightRadius = 200; 
         this.minLightRadius = 50;
+        this.fireballLightMask = null;
+        this.fireballLightRadius = 50;
     }
 
     preload() {
@@ -68,10 +70,22 @@ export default class GameScene extends Phaser.Scene {
         };
 
         this.spawnEnemy();
+
         this.fireballs = this.physics.add.group({
             defaultKey: 'fireball',
             maxSize: 100
         });
+
+        this.fireballLightMask = this.make.graphics();
+        this.fireballLightMask.fillStyle(0xffffff, 1);
+        this.fireballLightMask.fillCircle(0, 0, this.fireballLightRadius);
+        this.fireballLightMask.setBlendMode(Phaser.BlendModes.ERASE);
+        
+        // Supondo que você tenha um grupo de bolas de fogo
+        this.fireballs.children.each(function(fireball) {
+            fireball.setMask(this.darkness.createBitmapMask(this.fireballLightMask));
+        }, this);
+
 
         const frame = this.add.sprite(60, 560, 'Frame').setScale(2.5);
         this.fireballCooldownGraphic = this.add.sprite(50, 560, 'fireball').setScale(1.8);
@@ -101,31 +115,37 @@ export default class GameScene extends Phaser.Scene {
         this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
         this.player.setVelocity(0);
 
-        let moving = false;
+        this.fireballs.children.each(function(fireball) {
+            if (fireball.active) {
+                this.lightMask.fillCircle(fireball.x, fireball.y, fireball.fireballLightRadius);
+            }
+        }, this);
+
+        let isMoving = false;
         let attack = false;
     
         if (this.cursors.left.isDown || this.wasd.left.isDown) {
             this.player.setVelocityX(-160);
             this.player.anims.play('walkleft', true);
             this.direction = 'left';
-            moving = true;
+            isMoving = true;
         } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
             this.player.setVelocityX(160);
             this.player.anims.play('walkright', true);
             this.direction = 'right';
-            moving = true;
+            isMoving = true;
         }
     
         if (this.cursors.up.isDown || this.wasd.up.isDown) {
             this.player.setVelocityY(-160);
             this.player.anims.play('walkforward', true);
             this.direction = 'forward';
-            moving = true;
+            isMoving = true;
         } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
             this.player.setVelocityY(160);
             this.player.anims.play('walkbackwards', true);
             this.direction = 'backwards';
-            moving = true;
+            isMoving = true;
         }
     
         if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
@@ -141,7 +161,7 @@ export default class GameScene extends Phaser.Scene {
             attack = false;
         }
 
-        if (!moving && !attack) {
+        if (!isMoving && !attack) {
             this.player.anims.stop();
         }
     
@@ -319,52 +339,59 @@ export default class GameScene extends Phaser.Scene {
     }
 
     shootFireball() {
-        if (!this.canShootFireball) return;
-        this.canShootFireball = false;
-        this.fireballCooldownGraphic.setTint(0xff0000);
-        const fireball = this.fireballs.get(this.player.x, this.player.y, 'fireball').setScale(2);
-        fireball.anims.play('fireballAnim');
-        this.physics.add.collider(fireball, this.enemy, this.hitEnemy, null, this);
-        let velocityX = 0;
-        let velocityY = 0;
-        switch (this.direction) {
-            case 'left':
-                velocityX = -300;
-                fireball.angle = 180;  // Aponta para a esquerda
-                break;
-            case 'right':
-                velocityX = 300;
-                fireball.angle = 0;    // Aponta para a direita (padrão)
-                break;
-            case 'forward':
-                velocityY = -300;
-                fireball.angle = -90;  // Aponta para cima
-                break;
-            case 'backwards':
-                velocityY = 300;
-                fireball.angle = 90;   // Aponta para baixo
-                break;
-        }
-        fireball.setVelocity(velocityX, velocityY);
-        this.time.addEvent({
-            delay: this.fireballCooldownTime,
-            callback: () => {
-                this.canShootFireball = true;
-                this.fireballCooldownGraphic.clearTint();
-            },
-            callbackScope: this
-        });
-    }
+    if (!this.canShootFireball) return;
+    this.canShootFireball = false;
+    this.fireballCooldownGraphic.setTint(0xff0000);
 
-    hitEnemy(fireball, enemy) {
-        fireball.destroy();
-        this.enemyHealth -= 100;
-        if (this.enemyHealth <= 0) {
-            this.enemy.destroy();
-            this.enemyHealthBar.destroy();
-            this.spawnEnemy();
-        }
+    const fireball = this.fireballs.get(this.player.x, this.player.y, 'fireball').setScale(2);
+    fireball.anims.play('fireballAnim');
+
+    fireball.fireballLightRadius = this.fireballLightRadius;
+
+    this.physics.add.collider(fireball, this.enemy, this.hitEnemy, null, this);
+
+    let velocityX = 0;
+    let velocityY = 0;
+    switch (this.direction) {
+        case 'left':
+            velocityX = -300;
+            fireball.angle = 180;  // Aponta para a esquerda
+            break;
+        case 'right':
+            velocityX = 300;
+            fireball.angle = 0;    // Aponta para a direita (padrão)
+            break;
+        case 'forward':
+            velocityY = -300;
+            fireball.angle = -90;  // Aponta para cima
+            break;
+        case 'backwards':
+            velocityY = 300;
+            fireball.angle = 90;   // Aponta para baixo
+            break;
     }
+    fireball.setVelocity(velocityX, velocityY);
+    this.time.addEvent({
+        delay: this.fireballCooldownTime,
+        callback: () => {
+            this.canShootFireball = true;
+            this.fireballCooldownGraphic.clearTint();
+        },
+        callbackScope: this
+    });
+}
+
+    
+hitEnemy(fireball, enemy) {
+    fireball.destroy();
+    this.enemyHealth -= 100;
+    if (this.enemyHealth <= 0) {
+        this.enemy.destroy();
+        this.enemyHealthBar.destroy();
+        this.spawnEnemy();
+    }
+}
+
 
     updatePlayerHealthBar() {
         const healthPercentage = this.playerHealth / 100;
