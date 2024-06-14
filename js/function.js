@@ -92,8 +92,8 @@ export default class GameScene extends Phaser.Scene {
         frame.setDepth(10);
         this.fireballCooldownGraphic.setDepth(11);
 
-        this.playerHealthBarBg = this.add.sprite(60, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
-        this.playerHealthBar = this.add.sprite(60, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
+        this.playerHealthBarBg = this.add.sprite(30, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
+        this.playerHealthBar = this.add.sprite(30, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBarBg.setDepth(10);
         this.playerHealthBar.setDepth(11);
 
