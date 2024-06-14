@@ -1,6 +1,6 @@
 export default class GameScene extends Phaser.Scene {
     constructor() {
-        super({ key: 'GameScene' });
+        super({ key: 'Function' });
         this.player = null;
         this.cursors = null;
         this.direction = 'forward';
@@ -99,7 +99,6 @@ export default class GameScene extends Phaser.Scene {
 
         this.updatePlayerHealthBar();
 
-        
         this.time.addEvent({
             delay: 1000,
             callback: this.decreaseLightRadius,
@@ -124,7 +123,7 @@ export default class GameScene extends Phaser.Scene {
             callback: this.updateTimer,
             callbackScope: this,
             loop: true
-        });
+        });  
     }
 
     updateTimer() {
@@ -234,99 +233,138 @@ export default class GameScene extends Phaser.Scene {
     
 
     setupAnimations() {
-        
+    // Verifica e cria a animação 'walkbackwards' se ainda não existir
+    if (!this.anims.exists('walkbackwards')) {
         this.anims.create({
             key: 'walkbackwards',
             frames: this.anims.generateFrameNumbers('player', { start: 0, end: 4 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'walkforward' se ainda não existir
+    if (!this.anims.exists('walkforward')) {
         this.anims.create({
             key: 'walkforward',
             frames: this.anims.generateFrameNumbers('player', { start: 48, end: 53 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'walkleft' se ainda não existir
+    if (!this.anims.exists('walkleft')) {
         this.anims.create({
             key: 'walkleft',
             frames: this.anims.generateFrameNumbers('player', { start: 16, end: 20 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'walkright' se ainda não existir
+    if (!this.anims.exists('walkright')) {
         this.anims.create({
             key: 'walkright',
             frames: this.anims.generateFrameNumbers('player', { start: 32, end: 36 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'attackbackwards' se ainda não existir
+    if (!this.anims.exists('attackbackwards')) {
         this.anims.create({
             key: 'attackbackwards',
             frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
             frameRate: 10,
             repeat: 0
         });
+    }
 
+    // Verifica e cria a animação 'attackright' se ainda não existir
+    if (!this.anims.exists('attackright')) {
         this.anims.create({
             key: 'attackright',
             frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
             frameRate: 10,
             repeat: 0
         });
+    }
 
+    // Verifica e cria a animação 'attackleft' se ainda não existir
+    if (!this.anims.exists('attackleft')) {
         this.anims.create({
             key: 'attackleft',
             frames: this.anims.generateFrameNumbers('player', { start: 21, end: 24 }),
             frameRate: 10,
             repeat: 0
         });
+    }
 
+    // Verifica e cria a animação 'attackforward' se ainda não existir
+    if (!this.anims.exists('attackforward')) {
         this.anims.create({
             key: 'attackforward',
             frames: this.anims.generateFrameNumbers('player', { start: 53, end: 56 }),
             frameRate: 10,
             repeat: 0
         });
+    }
 
-        // Cria as animações de movimento do inimigo usando a spritesheet do jogador
+    // Verifica e cria a animação 'enemyWalkBackwards' se ainda não existir
+    if (!this.anims.exists('enemyWalkBackwards')) {
         this.anims.create({
             key: 'enemyWalkBackwards',
             frames: this.anims.generateFrameNumbers('player', { start: 0, end: 7 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'enemyWalkForward' se ainda não existir
+    if (!this.anims.exists('enemyWalkForward')) {
         this.anims.create({
             key: 'enemyWalkForward',
             frames: this.anims.generateFrameNumbers('player', { start: 48, end: 55 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'enemyWalkRight' se ainda não existir
+    if (!this.anims.exists('enemyWalkRight')) {
         this.anims.create({
             key: 'enemyWalkRight',
             frames: this.anims.generateFrameNumbers('player', { start: 32, end: 39 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'enemyWalkLeft' se ainda não existir
+    if (!this.anims.exists('enemyWalkLeft')) {
         this.anims.create({
             key: 'enemyWalkLeft',
             frames: this.anims.generateFrameNumbers('player', { start: 16, end: 23 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'enemyAttack' se ainda não existir
+    if (!this.anims.exists('enemyAttack')) {
         this.anims.create({
             key: 'enemyAttack',
             frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'fireballAnim' se ainda não existir
+    if (!this.anims.exists('fireballAnim')) {
         this.anims.create({
             key: 'fireballAnim',
             frames: this.anims.generateFrameNumbers('fireball', { start: 0, end: 3 }),
@@ -334,6 +372,7 @@ export default class GameScene extends Phaser.Scene {
             repeat: -1
         });
     }
+}
 
     spawnEnemy() {
         const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
@@ -439,6 +478,10 @@ export default class GameScene extends Phaser.Scene {
         const healthPercentage = this.playerHealth / 100;
         const newWidth = this.playerHealthBarBg.displayWidth * healthPercentage;
         this.playerHealthBar.displayWidth = newWidth;
+
+        if(this.playerHealth <= 0){
+            this.scene.start('GameOverScene');
+        }
     }
 
     increaseLightRadius() {
