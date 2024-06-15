@@ -1,4 +1,5 @@
 import Function from './function.js';
+import GameOverScene from './again.js'
 
 
 const config = {
@@ -13,7 +14,7 @@ const config = {
             debug: false
         }
     },
-    scene: [Function]
+    scene: [Function, GameOverScene]
 };
 
 var game = new Phaser.Game(config);

@@ -1,6 +1,6 @@
 export default class GameScene extends Phaser.Scene {
     constructor() {
-        super({ key: 'GameScene' });
+        super({ key: 'Function' });
         this.player = null;
         this.cursors = null;
         this.direction = 'forward';
@@ -25,6 +25,8 @@ export default class GameScene extends Phaser.Scene {
         this.minLightRadius = 50;
         this.fireballLightMask = null;
         this.fireballLightRadius = 50;
+        this.killCount = 0;
+        this.maxKills = 10;
     }
 
     preload() {
@@ -81,23 +83,22 @@ export default class GameScene extends Phaser.Scene {
         this.fireballLightMask.fillCircle(0, 0, this.fireballLightRadius);
         this.fireballLightMask.setBlendMode(Phaser.BlendModes.ERASE);
         
-        // Supondo que você tenha um grupo de bolas de fogo
         this.fireballs.children.each(function(fireball) {
             fireball.setMask(this.darkness.createBitmapMask(this.fireballLightMask));
         }, this);
-
 
         const frame = this.add.sprite(60, 560, 'Frame').setScale(2.5);
         this.fireballCooldownGraphic = this.add.sprite(50, 560, 'fireball').setScale(1.8);
         frame.setDepth(10);
         this.fireballCooldownGraphic.setDepth(11);
 
-        this.playerHealthBarBg = this.add.sprite(0, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
-        this.playerHealthBar = this.add.sprite(0, 25, 'lifebar2').setOrigin(0, 0).setScale(2.8);
+        this.playerHealthBarBg = this.add.sprite(30, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
+        this.playerHealthBar = this.add.sprite(30, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBarBg.setDepth(10);
         this.playerHealthBar.setDepth(11);
 
-        
+        this.updatePlayerHealthBar();
+
         this.time.addEvent({
             delay: 1000,
             callback: this.decreaseLightRadius,
@@ -105,20 +106,24 @@ export default class GameScene extends Phaser.Scene {
             loop: true
         });
 
+        this.killCountText = this.add.text(760, 10, `Kills: ${this.killCount} / ${this.maxKills}`, {
+            font: '20px Arial',
+            fill: '#ffffff',
+        }).setOrigin(1, 0);
 
-    this.timerValue = 60; 
-    this.timerText = this.add.text(700, 20, `Tempo: ${this.timerValue}`, {
-        font: '20px Arial',
-        fill: '#ffffff', 
-    }).setOrigin(1, 0); 
+        this.timerValue = 60; 
+        this.timerText = this.add.text(760, 50, `Tempo: ${this.timerValue}`, {
+            font: '20px Arial',
+            fill: '#ffffff', 
+        }).setOrigin(1, 0); 
 
     
-    this.time.addEvent({
-        delay: 1000,
-        callback: this.updateTimer,
-        callbackScope: this,
-        loop: true
-    });
+        this.time.addEvent({
+            delay: 1000,
+            callback: this.updateTimer,
+            callbackScope: this,
+            loop: true
+        });  
     }
 
     updateTimer() {
@@ -221,103 +226,145 @@ export default class GameScene extends Phaser.Scene {
     
         this.updatePlayerHealthBar();
         this.updateEnemyHealthBar();
+
+        this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
+
     }
     
 
     setupAnimations() {
-        
+    // Verifica e cria a animação 'walkbackwards' se ainda não existir
+    if (!this.anims.exists('walkbackwards')) {
         this.anims.create({
             key: 'walkbackwards',
             frames: this.anims.generateFrameNumbers('player', { start: 0, end: 4 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'walkforward' se ainda não existir
+    if (!this.anims.exists('walkforward')) {
         this.anims.create({
             key: 'walkforward',
             frames: this.anims.generateFrameNumbers('player', { start: 48, end: 53 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'walkleft' se ainda não existir
+    if (!this.anims.exists('walkleft')) {
         this.anims.create({
             key: 'walkleft',
             frames: this.anims.generateFrameNumbers('player', { start: 16, end: 20 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'walkright' se ainda não existir
+    if (!this.anims.exists('walkright')) {
         this.anims.create({
             key: 'walkright',
             frames: this.anims.generateFrameNumbers('player', { start: 32, end: 36 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'attackbackwards' se ainda não existir
+    if (!this.anims.exists('attackbackwards')) {
         this.anims.create({
             key: 'attackbackwards',
             frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
             frameRate: 10,
             repeat: 0
         });
+    }
 
+    // Verifica e cria a animação 'attackright' se ainda não existir
+    if (!this.anims.exists('attackright')) {
         this.anims.create({
             key: 'attackright',
             frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
             frameRate: 10,
             repeat: 0
         });
+    }
 
+    // Verifica e cria a animação 'attackleft' se ainda não existir
+    if (!this.anims.exists('attackleft')) {
         this.anims.create({
             key: 'attackleft',
             frames: this.anims.generateFrameNumbers('player', { start: 21, end: 24 }),
             frameRate: 10,
             repeat: 0
         });
+    }
 
+    // Verifica e cria a animação 'attackforward' se ainda não existir
+    if (!this.anims.exists('attackforward')) {
         this.anims.create({
             key: 'attackforward',
             frames: this.anims.generateFrameNumbers('player', { start: 53, end: 56 }),
             frameRate: 10,
             repeat: 0
         });
+    }
 
-        // Cria as animações de movimento do inimigo usando a spritesheet do jogador
+    // Verifica e cria a animação 'enemyWalkBackwards' se ainda não existir
+    if (!this.anims.exists('enemyWalkBackwards')) {
         this.anims.create({
             key: 'enemyWalkBackwards',
             frames: this.anims.generateFrameNumbers('player', { start: 0, end: 7 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'enemyWalkForward' se ainda não existir
+    if (!this.anims.exists('enemyWalkForward')) {
         this.anims.create({
             key: 'enemyWalkForward',
             frames: this.anims.generateFrameNumbers('player', { start: 48, end: 55 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'enemyWalkRight' se ainda não existir
+    if (!this.anims.exists('enemyWalkRight')) {
         this.anims.create({
             key: 'enemyWalkRight',
             frames: this.anims.generateFrameNumbers('player', { start: 32, end: 39 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'enemyWalkLeft' se ainda não existir
+    if (!this.anims.exists('enemyWalkLeft')) {
         this.anims.create({
             key: 'enemyWalkLeft',
             frames: this.anims.generateFrameNumbers('player', { start: 16, end: 23 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'enemyAttack' se ainda não existir
+    if (!this.anims.exists('enemyAttack')) {
         this.anims.create({
             key: 'enemyAttack',
             frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
             frameRate: 10,
             repeat: -1
         });
+    }
 
+    // Verifica e cria a animação 'fireballAnim' se ainda não existir
+    if (!this.anims.exists('fireballAnim')) {
         this.anims.create({
             key: 'fireballAnim',
             frames: this.anims.generateFrameNumbers('fireball', { start: 0, end: 3 }),
@@ -325,6 +372,7 @@ export default class GameScene extends Phaser.Scene {
             repeat: -1
         });
     }
+}
 
     spawnEnemy() {
         const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
@@ -343,6 +391,7 @@ export default class GameScene extends Phaser.Scene {
                 this.enemyHealthBar.destroy();
                 this.spawnEnemy();
                 this.increaseLightRadius();
+                this.incrementKillCount();
             }
         }
     }
@@ -413,20 +462,26 @@ export default class GameScene extends Phaser.Scene {
 }
 
     
-hitEnemy(fireball, enemy) {
-    fireball.destroy();
-    this.enemyHealth -= 100;
-    if (this.enemyHealth <= 0) {
-        this.enemy.destroy();
-        this.enemyHealthBar.destroy();
-        this.spawnEnemy();
+    hitEnemy(fireball, enemy) {
+        fireball.destroy();
+        this.enemyHealth -= 100;
+        if (this.enemyHealth <= 0) {
+            this.enemy.destroy();
+            this.enemyHealthBar.destroy();
+            this.spawnEnemy();
+            this.incrementKillCount();
+        }
     }
-}
 
 
     updatePlayerHealthBar() {
         const healthPercentage = this.playerHealth / 100;
-        this.playerHealthBar.displayWidth = this.playerHealthBarBg.width * healthPercentage;
+        const newWidth = this.playerHealthBarBg.displayWidth * healthPercentage;
+        this.playerHealthBar.displayWidth = newWidth;
+
+        if(this.playerHealth <= 0){
+            this.scene.start('GameOverScene');
+        }
     }
 
     increaseLightRadius() {
@@ -451,5 +506,20 @@ hitEnemy(fireball, enemy) {
             this.lightMask.fillStyle(0xffffff, 1);
             this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
         }
+    }
+
+    incrementKillCount() {
+        this.killCount += 1;
+        if (this.killCount >= this.maxKills) {
+            this.handleMaxKillsReached();
+        }
+    }
+
+    handleMaxKillsReached() {
+        // Aqui você pode adicionar uma ação quando o limite de kills for atingido
+        // Por exemplo, mostrar uma mensagem ou terminar o jogo
+        console.log("Limite máximo de kills atingido!");
+        this.scene.pause(); // Pausa o jogo
+        // Você pode adicionar mais lógica aqui, como mostrar uma tela de vitória
     }
 }
