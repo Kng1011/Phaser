@@ -1,6 +1,5 @@
-import Function from './function.js';
-import GameOverScene from './again.js'
-
+import GameScene from './function.js';
+import GameOverScene from './again.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -14,7 +13,7 @@ const config = {
             debug: false
         }
     },
-    scene: [Function, GameOverScene]
+    scene: [GameScene, GameOverScene]
 };
 
 var game = new Phaser.Game(config);

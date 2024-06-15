@@ -1,6 +1,6 @@
 export default class GameScene extends Phaser.Scene {
     constructor() {
-        super({ key: 'Function' });
+        super({ key: 'GameScene'});
         this.player = null;
         this.cursors = null;
         this.direction = 'forward';
@@ -37,6 +37,12 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('Frame', 'assets/Frame.png');
         this.load.image('lifebar1', 'assets/Lifebar1.png');
         this.load.image('lifebar2', 'assets/Lifebar2.png');
+    }
+
+    init() {
+        this.playerHealth = 100;
+        this.killCount = 0;
+        this.lightRadius = 100; 
     }
 
     create() {
@@ -92,8 +98,8 @@ export default class GameScene extends Phaser.Scene {
         frame.setDepth(10);
         this.fireballCooldownGraphic.setDepth(11);
 
-        this.playerHealthBarBg = this.add.sprite(30, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
-        this.playerHealthBar = this.add.sprite(30, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
+        this.playerHealthBarBg = this.add.sprite(0, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
+        this.playerHealthBar = this.add.sprite(0, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBarBg.setDepth(10);
         this.playerHealthBar.setDepth(11);
 
@@ -210,7 +216,7 @@ export default class GameScene extends Phaser.Scene {
                 if (!this.enemy.anims.isPlaying || this.enemy.anims.currentAnim.key !== 'enemyAttack') {
                     this.enemy.anims.play('enemyAttack', true);
                     if (this.playerHealth > 0) {
-                        this.playerHealth -= 5;
+                        this.playerHealth -= 20;
                     }
                 }
             } else {
@@ -218,7 +224,7 @@ export default class GameScene extends Phaser.Scene {
                 this.updateEnemyAnimation();
             }
 
-            // Verificação de visibilidade do inimigo
+            
             const isEnemyVisible = distance <= this.lightRadius;
             this.enemy.setVisible(isEnemyVisible);
             this.enemyHealthBar.setVisible(isEnemyVisible);
@@ -233,7 +239,7 @@ export default class GameScene extends Phaser.Scene {
     
 
     setupAnimations() {
-    // Verifica e cria a animação 'walkbackwards' se ainda não existir
+ 
     if (!this.anims.exists('walkbackwards')) {
         this.anims.create({
             key: 'walkbackwards',
@@ -243,7 +249,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'walkforward' se ainda não existir
+
     if (!this.anims.exists('walkforward')) {
         this.anims.create({
             key: 'walkforward',
@@ -253,7 +259,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'walkleft' se ainda não existir
+
     if (!this.anims.exists('walkleft')) {
         this.anims.create({
             key: 'walkleft',
@@ -263,7 +269,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'walkright' se ainda não existir
+  
     if (!this.anims.exists('walkright')) {
         this.anims.create({
             key: 'walkright',
@@ -273,7 +279,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'attackbackwards' se ainda não existir
+   
     if (!this.anims.exists('attackbackwards')) {
         this.anims.create({
             key: 'attackbackwards',
@@ -283,7 +289,6 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'attackright' se ainda não existir
     if (!this.anims.exists('attackright')) {
         this.anims.create({
             key: 'attackright',
@@ -293,7 +298,6 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'attackleft' se ainda não existir
     if (!this.anims.exists('attackleft')) {
         this.anims.create({
             key: 'attackleft',
@@ -303,7 +307,6 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'attackforward' se ainda não existir
     if (!this.anims.exists('attackforward')) {
         this.anims.create({
             key: 'attackforward',
@@ -313,7 +316,6 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'enemyWalkBackwards' se ainda não existir
     if (!this.anims.exists('enemyWalkBackwards')) {
         this.anims.create({
             key: 'enemyWalkBackwards',
@@ -323,7 +325,6 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'enemyWalkForward' se ainda não existir
     if (!this.anims.exists('enemyWalkForward')) {
         this.anims.create({
             key: 'enemyWalkForward',
@@ -333,7 +334,6 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'enemyWalkRight' se ainda não existir
     if (!this.anims.exists('enemyWalkRight')) {
         this.anims.create({
             key: 'enemyWalkRight',
@@ -343,7 +343,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'enemyWalkLeft' se ainda não existir
+ 
     if (!this.anims.exists('enemyWalkLeft')) {
         this.anims.create({
             key: 'enemyWalkLeft',
@@ -353,7 +353,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'enemyAttack' se ainda não existir
+   
     if (!this.anims.exists('enemyAttack')) {
         this.anims.create({
             key: 'enemyAttack',
@@ -363,7 +363,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Verifica e cria a animação 'fireballAnim' se ainda não existir
+  
     if (!this.anims.exists('fireballAnim')) {
         this.anims.create({
             key: 'fireballAnim',
@@ -435,19 +435,19 @@ export default class GameScene extends Phaser.Scene {
     switch (this.direction) {
         case 'left':
             velocityX = -300;
-            fireball.angle = 180;  // Aponta para a esquerda
+            fireball.angle = 180;  
             break;
         case 'right':
             velocityX = 300;
-            fireball.angle = 0;    // Aponta para a direita (padrão)
+            fireball.angle = 0;    
             break;
         case 'forward':
             velocityY = -300;
-            fireball.angle = -90;  // Aponta para cima
+            fireball.angle = -90; 
             break;
         case 'backwards':
             velocityY = 300;
-            fireball.angle = 90;   // Aponta para baixo
+            fireball.angle = 90;   
             break;
     }
     fireball.setVelocity(velocityX, velocityY);
@@ -486,7 +486,7 @@ export default class GameScene extends Phaser.Scene {
 
     increaseLightRadius() {
         if (this.lightRadius < this.maxLightRadius) {
-            this.lightRadius += 20; // Ajuste o valor conforme necessário
+            this.lightRadius += 20; 
             if (this.lightRadius > this.maxLightRadius) {
                 this.lightRadius = this.maxLightRadius;
             }
@@ -516,10 +516,8 @@ export default class GameScene extends Phaser.Scene {
     }
 
     handleMaxKillsReached() {
-        // Aqui você pode adicionar uma ação quando o limite de kills for atingido
-        // Por exemplo, mostrar uma mensagem ou terminar o jogo
+
         console.log("Limite máximo de kills atingido!");
-        this.scene.pause(); // Pausa o jogo
-        // Você pode adicionar mais lógica aqui, como mostrar uma tela de vitória
+        this.scene.pause(); 
     }
 }

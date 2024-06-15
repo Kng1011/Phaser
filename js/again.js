@@ -9,31 +9,24 @@ export default class GameOverScene extends Phaser.Scene {
 
     create(){
         this.add.text(400, 200, 'Game Over',
-            {font: '48px Arial',
-             fill: '#fff'   
-            }
+            {font: '48px Arial', fill: '#fff'}
         ).setOrigin(0.5);
 
         const restartButton = this.add.text(400, 300, 'Restart', 
-            {font: '32px Arial',
-             fill: '#fff'
-            }
+            {font: '32px Arial', fill: '#fff'}
         ).setOrigin(0.5).setInteractive().on('pointerdown', () => this.restartGame());
 
         const leaveButton = this.add.text(400, 400, 'Leave',
-            {font: '32px Arial',
-             fill: '#fff'
-            }
+            {font: '32px Arial', fill: '#fff'}
         ).setOrigin(0.5).setInteractive().on('pointerdown', () => this.leaveGame());
     }
 
     restartGame() {
-        this.scene.start('Function'); 
-
-        this.scene.get('Function').events.emit('restart');
+        this.scene.start('GameScene');
+        console.log('restart');
     }
 
     leaveGame(){
-        this.scene.start('MainMenuScene');
+        this.scene.start('GameScene');
     }
 }
