@@ -476,7 +476,7 @@ export default class GameScene extends Phaser.Scene {
     fireball.fireballLightRadius = this.fireballLightRadius;
     fireball.fireballLightColor =  0xffa500;
 
-    this.physics.add.collider(fireball, this.enemy, this.hitEnemy, null, this);
+    this.physics.add.overlap(fireball, this.enemy, this.hitEnemy, null, this);
 
     let velocityX = 0;
     let velocityY = 0;
@@ -517,7 +517,7 @@ export default class GameScene extends Phaser.Scene {
         const darkAttack = this.darkattacks.get(this.player.x, this.player.y, 'DarkAttack1').setScale(2);
         darkAttack.anims.play('DarkAttackAnim');
     
-        this.physics.add.collider(darkAttack, this.enemy, (darkAttack, enemy) => {
+        this.physics.add.overlap(darkAttack, this.enemy, (darkAttack, enemy) => {
             darkAttack.anims.play('DarkAttackAnimHit');
             this.hitEnemy(darkAttack, enemy);
         }, null, this);
