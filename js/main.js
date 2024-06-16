@@ -3,6 +3,7 @@ import GameOverScene from './again.js';
 import MenuScene from './menu.js';
 import ControlsScene from './controls.js';
 import SkillSelectionScene from './skillSelection.js';
+import PowerUpSelectionScene from './powerUpSelection.js'; 
 
 const config = {
     type: Phaser.AUTO,
@@ -16,7 +17,7 @@ const config = {
             debug: false
         }
     },
-    scene: [MenuScene, GameScene, GameOverScene, ControlsScene, SkillSelectionScene]
+    scene: [MenuScene, SkillSelectionScene, PowerUpSelectionScene, GameScene, GameOverScene, ControlsScene]
 };
 
 var game = new Phaser.Game(config);

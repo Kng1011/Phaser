@@ -1,7 +1,7 @@
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene'});
-        this.player = null;
+        
         this.cursors = null;
         this.direction = 'forward';
         this.darkness = null;
@@ -26,8 +26,12 @@ export default class GameScene extends Phaser.Scene {
         this.canShootFireball = true;
         this.fireballCooldownTime = 2000; 
         this.fireballCooldownGraphic = null;
-
+        
+        this.player = null;
+        this.playerSpeed = 200;
+        this.playerAttack = 25;
         this.playerHealth = 100;
+        this.playerMaxHealth = 100;
         this.playerHealthBar = null;
         this.playerHealthBarRed = null;
 
@@ -59,10 +63,11 @@ export default class GameScene extends Phaser.Scene {
     }
 
     init(data) {
-        this.playerHealth = 100;
+        this.playerHealth = this.playerMaxHealth;
         this.killCount = 0;
         this.lightRadius = 100; 
         this.selectedSkill = data.selectedSkill;
+        this.selectedPowerUp = data.selectedPowerUp;
     }
 
     create() {
@@ -173,6 +178,21 @@ export default class GameScene extends Phaser.Scene {
         this.lightFlash = this.add.graphics();
         this.lightFlash.fillStyle(0xffffe0, 1);
         this.lightFlash.setAlpha(0);
+
+        if (this.selectedPowerUp) {
+            this.applyPowerUp(this.selectedPowerUp);
+        }
+    }
+
+    applyPowerUp(powerUp) {
+        if (powerUp === 'health') {
+            this.playerMaxHealth += 50;
+            this.playerHealth = 150;    
+        } else if (powerUp === 'attack') {  
+            this.playerAttack = 55;
+        } else if (powerUp === 'speed') {
+            this.playerSpeed = 300; 
+        }
     }
 
     addSkillFrame(x, y, skill) {
@@ -215,6 +235,8 @@ export default class GameScene extends Phaser.Scene {
         this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
         this.player.setVelocity(0);
 
+        console.log(this.playerHealth);
+
         this.fireballs.children.each(function(fireball) {
             if (fireball.active) {
                 this.lightMask.fillStyle(fireball.fireballLightColor, 1);
@@ -226,24 +248,24 @@ export default class GameScene extends Phaser.Scene {
         let attack = false;
     
         if (this.cursors.left.isDown || this.wasd.left.isDown) {
-            this.player.setVelocityX(-160);
+            this.player.setVelocityX(-this.playerSpeed);
             this.player.anims.play('walkleft', true);
             this.direction = 'left';
             isMoving = true;
         } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-            this.player.setVelocityX(160);
+            this.player.setVelocityX(this.playerSpeed);
             this.player.anims.play('walkright', true);
             this.direction = 'right';
             isMoving = true;
         }
     
         if (this.cursors.up.isDown || this.wasd.up.isDown) {
-            this.player.setVelocityY(-160);
+            this.player.setVelocityY(-this.playerSpeed);
             this.player.anims.play('walkforward', true);
             this.direction = 'forward';
             isMoving = true;
         } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-            this.player.setVelocityY(160);
+            this.player.setVelocityY(this.playerSpeed);
             this.player.anims.play('walkbackwards', true);
             this.direction = 'backwards';
             isMoving = true;
@@ -470,14 +492,14 @@ export default class GameScene extends Phaser.Scene {
 
     dealDamage() {
         if (this.enemy && Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y) < this.enemyAttackRange) {
-            this.enemyHealth -= 25;
+            this.enemyHealth -= this.playerAttack;
             if (this.enemyHealth <= 0) {
                 this.enemy.destroy();
                 this.enemyHealthBar.destroy();
                 this.spawnEnemy();
                 this.increaseLightRadius();
                 this.incrementKillCount();
-                if (this.playerHealth + 10 < 100) {
+                if (this.playerHealth + 10 < this.playerMaxHealth) {
                     this.playerHealth += 10;
                 }
             }
@@ -649,7 +671,7 @@ export default class GameScene extends Phaser.Scene {
 
 
     updatePlayerHealthBar() {
-        const healthPercentage = this.playerHealth / 100;
+        const healthPercentage = this.playerHealth / this.playerMaxHealth;
         const newWidth = this.playerHealthBarBg.displayWidth * healthPercentage;
         this.playerHealthBar.displayWidth = newWidth;
 

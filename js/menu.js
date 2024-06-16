@@ -1,10 +1,10 @@
 export default class MenuScene extends Phaser.Scene {
     constructor() {
-        super({key: 'MenuScene'});
+        super({ key: 'MenuScene' });
     }
 
     preload() {
-        // Carregar os recursos, se necessário
+        // pass
     }
 
     create() {
@@ -18,6 +18,11 @@ export default class MenuScene extends Phaser.Scene {
             fill: '#fff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.startSkillSelection());
 
+        const powerUpButton = this.add.text(400, 350, 'Select Power-Up', {
+            font: '32px Arial',
+            fill: '#fff'
+        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.startPowerUpSelection());
+
         const controlsButton = this.add.text(400, 400, 'Controls', {
             font: '32px Arial',
             fill: '#fff'
@@ -26,6 +31,10 @@ export default class MenuScene extends Phaser.Scene {
 
     startSkillSelection() {
         this.scene.start('SkillSelectionScene');
+    }
+
+    startPowerUpSelection() {
+        this.scene.start('PowerUpSelectionScene');
     }
 
     controls() {
