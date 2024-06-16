@@ -10,6 +10,7 @@ export default class GameScene extends Phaser.Scene {
         this.attackKey = null;
         this.fireballKey = null;
         this.darkAttackKey = null;
+        this.mapFlashKey = null;
 
         this.enemy = null;
         this.enemyHealth = 100;
@@ -37,6 +38,8 @@ export default class GameScene extends Phaser.Scene {
         this.fireballLightRadius = 50;
         this.killCount = 0;
         this.maxKills = 10 ;
+        this.mapVisible = false;
+        this.layer1 = null;
     }
 
     preload() {
@@ -59,12 +62,13 @@ export default class GameScene extends Phaser.Scene {
     create() {
         const map = this.make.tilemap({ key: 'map' });
         const tileset = map.addTilesetImage('Minifantasy_ForgottenPlainsTiles', 'tiles');
-        const layer1 = map.createLayer('Camada de Blocos 1', tileset);
+        this.layer1 = map.createLayer('Camada de Blocos 1', tileset);
 
         this.setupAnimations();
         this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
         this.fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
         this.darkAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+        this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
 
         this.player = this.physics.add.sprite(400, 300, 'player').setScale(2);
 
@@ -79,7 +83,7 @@ export default class GameScene extends Phaser.Scene {
         this.lightMask.setBlendMode(Phaser.BlendModes.ERASE);
 
         const mask = this.darkness.createBitmapMask(this.lightMask);
-        layer1.setMask(mask);
+        this.layer1.setMask(mask);
         this.player.setMask(mask);
 
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -235,6 +239,10 @@ export default class GameScene extends Phaser.Scene {
 
         if (Phaser.Input.Keyboard.JustDown(this.darkAttackKey) && this.canDarkAttack) {
             this.DarkAttack();
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.mapFlashKey)) {
+            this.flashMap(this.layer1); 
         }
     
         if (this.enemy) {
@@ -463,6 +471,17 @@ export default class GameScene extends Phaser.Scene {
         } else if (this.enemy.body.velocity.y < 0) {
             this.enemy.anims.play('enemyWalkBackwards', true);
         }
+    }
+
+    flashMap(layer) {
+        if (!this.mapVisible) {
+            layer.clearMask(); 
+            this.mapVisible = true;
+            this.time.delayedCall(1000, () => {
+                layer.setMask(this.darkness.createBitmapMask(this.lightMask)); 
+            }, [], this);
+        }
+        this.mapVisible = false;
     }
 
     shootFireball() {
