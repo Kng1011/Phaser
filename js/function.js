@@ -563,7 +563,7 @@ export default class GameScene extends Phaser.Scene {
             this.enemyHealthBar.destroy();
             this.spawnEnemy();
             this.incrementKillCount();
-        
+            this.increaseLightRadius();
         }
     }
 
@@ -578,7 +578,8 @@ export default class GameScene extends Phaser.Scene {
             this.enemy.destroy();
             this.enemyHealthBar.destroy();
             this.spawnEnemy();
-            this.incrementKillCount(); 
+            this.incrementKillCount();
+            this.increaseLightRadius(); 
         }
     }
 
