@@ -42,6 +42,8 @@ export default class GameScene extends Phaser.Scene {
         this.mapVisible = false;
         this.layer1 = null;
         this.lightFlash = null;
+
+        this.skillFrames = [];
     }
 
     preload() {
@@ -53,6 +55,7 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('Frame', 'assets/Frame.png');
         this.load.image('lifebar1', 'assets/Lifebar1.png');
         this.load.image('lifebar2', 'assets/Lifebar2.png');
+       
     }
 
     init(data) {
@@ -123,14 +126,16 @@ export default class GameScene extends Phaser.Scene {
             fireball.setMask(this.darkness.createBitmapMask(this.fireballLightMask));
         }, this);
 
-        const frame = this.add.sprite(60, 560, 'Frame').setScale(2.5);
-        const frame2 = this.add.sprite(135, 560, 'Frame').setScale(2.5);
-        this.fireballCooldownGraphic = this.add.sprite(50, 560, 'fireball').setScale(1.8);
-        this.darkAttacksCooldownTimeGraphic = this.add.sprite(135, 560, 'DarkAttack1').setScale(1.8);
-        frame.setDepth(10);
-        frame2.setDepth(10);
-        this.fireballCooldownGraphic.setDepth(11);
-        this.darkAttacksCooldownTimeGraphic.setDepth(11);
+        const baseX = 60;
+        const baseY = 560;
+
+        if (this.selectedSkill === 'fireball') {
+            this.addSkillFrame(baseX, baseY, 'fireball');
+        } else if (this.selectedSkill === 'darkAttack') {
+            this.addSkillFrame(baseX, baseY, 'DarkAttack1');
+        } else if (this.selectedSkill === 'flash') {
+            this.addSkillFrame(baseX, baseY, 'flash');
+        }
 
         this.playerHealthBarBg = this.add.sprite(0, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBar = this.add.sprite(0, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
@@ -166,8 +171,25 @@ export default class GameScene extends Phaser.Scene {
         }); 
 
         this.lightFlash = this.add.graphics();
-        this.lightFlash.fillStyle(0xffffff, 1);
+        this.lightFlash.fillStyle(0xffffe0, 1);
         this.lightFlash.setAlpha(0);
+    }
+
+    addSkillFrame(x, y, skill) {
+        const frame = this.add.sprite(x, y, 'Frame').setScale(2.5);
+        let skillGraphic;
+        if (skill === 'fireball') {
+            skillGraphic = this.add.sprite(x - 10, y, 'fireball').setScale(1.8);
+            this.fireballCooldownGraphic = skillGraphic;
+        } else if (skill === 'DarkAttack1') {
+            skillGraphic = this.add.sprite(x , y, 'DarkAttack1').setScale(1.8);
+            this.darkAttacksCooldownTimeGraphic = skillGraphic;
+        } else if (skill === 'flash') {
+            skillGraphic = this.add.text(x , y, 'Flash', { fontSize: '20px', color: '#ffffff' }).setOrigin(0.5);
+        }
+        frame.setDepth(10);
+        skillGraphic.setDepth(11);
+        this.skillFrames.push({ frame, skillGraphic });
     }
 
     updateTimer() {
