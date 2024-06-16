@@ -27,6 +27,6 @@ export default class GameOverScene extends Phaser.Scene {
     }
 
     leaveGame(){
-        this.scene.start('GameScene');
+        this.scene.start('MenuScene');
     }
 }
