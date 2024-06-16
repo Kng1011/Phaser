@@ -10,6 +10,9 @@ export default class ControlsScene extends Phaser.Scene {
         this.load.image('Q', 'assets/Q.png');
         this.load.image('Z', 'assets/Z.png');
         this.load.image('M', 'assets/M.png');
+        this.load.spritesheet('fireball', 'assets/fireball.png', { frameWidth: 64, frameHeight: 32 });
+        this.load.spritesheet('DarkAttack1', 'assets/DarkVFX1.png', { frameWidth: 40, frameHeight: 32 });
+        this.load.image('Frame', 'assets/Frame.png');
     }
 
     create() {
@@ -43,8 +46,29 @@ export default class ControlsScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
+        const frame1 = this.add.sprite(100, 420, 'Frame').setScale(1.8);
+        let skillGraphic1;
+        skillGraphic1 = this.add.sprite(92, 420, 'fireball').setScale(1.5);
+
+        const frame2 = this.add.sprite(200, 420, 'Frame').setScale(1.8);
+        let skillGraphic2;
+        skillGraphic2 = this.add.sprite(200, 420, 'DarkAttack1').setScale(1.5);
+
+        const frame3 = this.add.sprite(600, 420, 'Frame').setScale(1.8);
+        let skillGraphic3;
+        skillGraphic3 = this.add.text(600 , 420, 'Flash', { fontSize: '17px', color: '#fff' }).setOrigin(0.5);
+
+        frame1.setDepth(6);
+        skillGraphic1.setDepth(7);       
+
+        frame2.setDepth(8);
+        skillGraphic2.setDepth(9);
+
+        frame3.setDepth(10);
+        skillGraphic3.setDepth(11);
+
         // Adicionando o botão de voltar
-        const backButton = this.add.text(400, 500, 'Back', {
+        const backButton = this.add.text(400, 520, 'Back', {
             font: '32px Arial',
             fill: '#fff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.backMenu());
@@ -54,7 +78,8 @@ export default class ControlsScene extends Phaser.Scene {
         text.setDepth(2);
         setas.setDepth(3);
         text2.setDepth(4);
-        backButton.setDepth(5);
+        text3.setDepth(5);
+        backButton.setDepth(12);
     }
 
     backMenu() {
