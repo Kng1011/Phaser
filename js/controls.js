@@ -12,8 +12,8 @@ export default class ControlsScene extends Phaser.Scene {
         const letras = this.add.sprite(100, 300, 'letras').setScale(1);
         const setas = this.add.sprite(700, 300, 'setas');
 
-        const textX = (leftImage.x + rightImage.x) / 2;
-        const textY = (leftImage.y + rightImage.y) / 2;
+        const textX = (letras.x + setas.x) / 2;
+        const textY = (letras.y + setas.y) / 2;
 
         const text = this.add.text(textX, textY, 'Movimento', {
             font: '32px Arial',
