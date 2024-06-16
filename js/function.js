@@ -40,6 +40,7 @@ export default class GameScene extends Phaser.Scene {
         this.maxKills = 10 ;
         this.mapVisible = false;
         this.layer1 = null;
+        this.lightFlash = null;
     }
 
     preload() {
@@ -156,7 +157,11 @@ export default class GameScene extends Phaser.Scene {
             callback: this.updateTimer,
             callbackScope: this,
             loop: true
-        });  
+        }); 
+
+        this.lightFlash = this.add.graphics();
+        this.lightFlash.fillStyle(0xffffff, 1);
+        this.lightFlash.setAlpha(0);
     }
 
     updateTimer() {
@@ -475,13 +480,26 @@ export default class GameScene extends Phaser.Scene {
 
     flashMap(layer) {
         if (!this.mapVisible) {
-            layer.clearMask(); 
+            layer.clearMask();
             this.mapVisible = true;
+
+            
+            this.lightFlash.clear();
+            this.lightFlash.fillStyle(0xffffe0, 1);
+            this.lightFlash.setAlpha(1);
+            this.lightFlash.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
+            
+            
+            this.time.delayedCall(200, () => {
+                this.lightFlash.setAlpha(0);
+            }, [], this);
+            
+            
             this.time.delayedCall(1000, () => {
-                layer.setMask(this.darkness.createBitmapMask(this.lightMask)); 
+                layer.setMask(this.darkness.createBitmapMask(this.lightMask));
+                this.mapVisible = false;
             }, [], this);
         }
-        this.mapVisible = false;
     }
 
     shootFireball() {
