@@ -48,6 +48,7 @@ export default class GameScene extends Phaser.Scene {
         this.lightFlash = null;
 
         this.skillFrames = [];
+        this.selectedSkills = [];
     }
 
     preload() {
@@ -66,7 +67,8 @@ export default class GameScene extends Phaser.Scene {
         this.playerHealth = this.playerMaxHealth;
         this.killCount = 0;
         this.lightRadius = 100; 
-        this.selectedSkill = data.selectedSkill;
+        this.selectedSkills.push(data.selectedSkill);
+        console.log(this.selectedSkills);
         this.selectedPowerUp = data.selectedPowerUp;
     }
 
@@ -77,13 +79,20 @@ export default class GameScene extends Phaser.Scene {
 
         this.setupAnimations();
         this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-        if (this.selectedSkill === 'fireball') {
-            this.fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
-        } else if (this.selectedSkill === 'darkAttack') {
-            this.darkAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
-        } else if (this.selectedSkill === 'flash') {
-            this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
-        }
+
+        this.selectedSkills.forEach(skill => {
+            switch (skill) {
+                case 'fireball':
+                    this.fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+                    break;
+                case 'darkAttack':
+                    this.darkAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+                    break;
+                case 'flash':
+                    this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+                    break;
+            }
+        });
 
         this.player = this.physics.add.sprite(400, 300, 'player').setScale(2);
 
@@ -133,15 +142,17 @@ export default class GameScene extends Phaser.Scene {
 
         const baseX = 60;
         const baseY = 560;
-
-        if (this.selectedSkill === 'fireball') {
-            this.addSkillFrame(baseX, baseY, 'fireball');
-        } else if (this.selectedSkill === 'darkAttack') {
-            this.addSkillFrame(baseX, baseY, 'DarkAttack1');
-        } else if (this.selectedSkill === 'flash') {
-            this.addSkillFrame(baseX, baseY, 'flash');
-        }
-
+        const frameOffset = 70;
+        this.selectedSkills.forEach((skill, index) => {
+            if (skill === 'fireball') {
+                this.addSkillFrame(baseX + index * frameOffset, baseY, 'fireball');
+            } else if (skill === 'darkAttack') {
+                this.addSkillFrame(baseX + index * frameOffset, baseY, 'DarkAttack1');
+            } else if (skill === 'flash') {
+                this.addSkillFrame(baseX + index * frameOffset, baseY, 'flash');
+            }
+        });
+    
         this.playerHealthBarBg = this.add.sprite(10, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBar = this.add.sprite(10, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBarBg.setDepth(10);
@@ -287,18 +298,20 @@ export default class GameScene extends Phaser.Scene {
         if (!isMoving && !attack) {
             this.player.anims.stop();
         }
-    
-        if (this.selectedSkill === 'fireball' && Phaser.Input.Keyboard.JustDown(this.fireballKey) && this.canShootFireball) {
+
+        if (this.fireballKey && Phaser.Input.Keyboard.JustDown(this.fireballKey) && this.canShootFireball) {
             this.shootFireball();
         }
-
-        if (this.selectedSkill === 'darkAttack' && Phaser.Input.Keyboard.JustDown(this.darkAttackKey) && this.canDarkAttack) {
+    
+        if (this.darkAttackKey && Phaser.Input.Keyboard.JustDown(this.darkAttackKey) && this.canDarkAttack) {
             this.DarkAttack();
         }
-
-        if (this.selectedSkill === 'flash' && Phaser.Input.Keyboard.JustDown(this.mapFlashKey)) {
-            this.flashMap(this.layer1); 
+    
+        if (this.mapFlashKey && Phaser.Input.Keyboard.JustDown(this.mapFlashKey)) {
+            this.flashMap(this.layer1);
         }
+    
+        
         if (this.enemy) {
             const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y);
             if (distance < this.enemyAttackRange) {
@@ -714,6 +727,6 @@ export default class GameScene extends Phaser.Scene {
     handleMaxKillsReached() {
 
         console.log("Limite máximo de kills atingido!");
-        this.scene.pause(); 
+        this.scene.start('SkillSelectionScene');
     }
 }
