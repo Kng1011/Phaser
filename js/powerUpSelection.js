@@ -27,17 +27,40 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
                 description: 'Increases your movement speed.',
                 position: { x: 400, y: 400 },
                 powerUpKey: 'speed'
+            },
+            {
+                name: 'Attack Speed Boost',
+                description: 'Increases your attack speed.',
+                position: { x: 400, y: 500 },
+                powerUpKey: 'attackSpeed'
+            },
+            {
+                name: 'Coolwdown Reduction',
+                description: 'Reduces your ability cooldowns.',
+                position: { x: 400, y: 600 },
+                powerUpKey: 'cooldownReduction'
+            },
+            {
+                name: 'Regeneration',
+                description: 'Heals every time you kill an enemy.',
+                position: { x: 400, y: 700 },
+                powerUpKey: 'healOnKill'
             }
         ];
 
-      
-        powerUps.forEach(powerUp => {
-            const powerUpButton = this.add.text(powerUp.position.x, powerUp.position.y, powerUp.name, {
+        // Embaralhar as habilidades e selecionar as três primeiras
+        Phaser.Utils.Array.Shuffle(powerUps);
+        const selectedPowerUps = powerUps.slice(0, 3);
+
+        // Posicionar os power-ups selecionados
+        selectedPowerUps.forEach((powerUp, index) => {
+            const yPos = 200 + index * 100;
+            const powerUpButton = this.add.text(400, yPos, powerUp.name, {
                 fontSize: '32px',
                 color: '#ffffff'
             }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectPowerUp(powerUp.powerUpKey));
 
-            this.add.text(powerUp.position.x, powerUp.position.y + 40, powerUp.description, {
+            this.add.text(400, yPos + 40, powerUp.description, {
                 fontSize: '18px',
                 color: '#aaaaaa'
             }).setOrigin(0.5);

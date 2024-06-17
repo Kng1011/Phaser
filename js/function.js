@@ -30,10 +30,12 @@ export default class GameScene extends Phaser.Scene {
         this.player = null;
         this.playerSpeed = 200;
         this.playerAttack = 25;
+        this.playerAttackSpeed = 10;
         this.playerHealth = 100;
         this.playerMaxHealth = 100;
         this.playerHealthBar = null;
         this.playerHealthBarRed = null;
+        this.healHeath = 0;
 
         this.lightRadius = 100; 
         this.lightDecreaseRate = 3; 
@@ -46,6 +48,7 @@ export default class GameScene extends Phaser.Scene {
         this.mapVisible = false;
         this.layer1 = null;
         this.lightFlash = null;
+        
 
         this.skillFrames = [];
         this.selectedSkills = [];
@@ -203,6 +206,13 @@ export default class GameScene extends Phaser.Scene {
             this.playerAttack = 55;
         } else if (powerUp === 'speed') {
             this.playerSpeed = 300; 
+        } else if (powerUp === 'attackSpeed') {
+            this.playerAttackSpeed = 20;
+        } else if (powerUp === 'cooldownReduction') {
+            this.fireballCooldownTime = 1000;
+            this.darkAttacksCooldownTime = 2000;
+        } else if (powerUp === 'healOnKill') {
+            this.healHeath = 10;
         }
     }
 
@@ -513,7 +523,7 @@ export default class GameScene extends Phaser.Scene {
                 this.increaseLightRadius();
                 this.incrementKillCount();
                 if (this.playerHealth + 10 < this.playerMaxHealth) {
-                    this.playerHealth += 10;
+                    this.playerHealth += this.healHeath;
                 }
             }
         }
