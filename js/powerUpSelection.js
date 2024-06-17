@@ -1,6 +1,13 @@
 export default class PowerUpSelectionScene extends Phaser.Scene {
     constructor() {
         super({ key: 'PowerUpSelectionScene' });
+        this.selectedSkills = [];
+        this.selectedPowerUps = [];
+    }
+
+    init(data) {
+        this.selectedSkills = data.selectedSkills || [];
+        this.selectedPowerUps = data.selectedPowerUps || [];
     }
 
     create() {
@@ -13,31 +20,51 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
             {
                 name: 'Health Boost',
                 description: 'Increases your health.',
-                position: { x: 400, y: 200 },
                 powerUpKey: 'health'
             },
             {
                 name: 'Attack Boost',
                 description: 'Increases your attack power.',
-                position: { x: 400, y: 300 },
                 powerUpKey: 'attack'
             },
             {
                 name: 'Speed Boost',
                 description: 'Increases your movement speed.',
-                position: { x: 400, y: 400 },
                 powerUpKey: 'speed'
+            },
+            {
+                name: 'Attack Speed Boost',
+                description: 'Increases your attack speed.',
+                powerUpKey: 'attackSpeed'
+            },
+            {
+                name: 'Cooldown Reduction',
+                description: 'Reduces your ability cooldowns.',
+                powerUpKey: 'cooldownReduction'
+            },
+            {
+                name: 'Regeneration',
+                description: 'Heals every time you kill an enemy.',
+                powerUpKey: 'healOnKill'
             }
         ];
 
-      
-        powerUps.forEach(powerUp => {
-            const powerUpButton = this.add.text(powerUp.position.x, powerUp.position.y, powerUp.name, {
+
+        const availablePowerUps = powerUps.filter(powerUp => !this.selectedPowerUps.includes(powerUp.powerUpKey));
+
+ 
+        Phaser.Utils.Array.Shuffle(availablePowerUps);
+        const selectedPowerUps = availablePowerUps.slice(0, 3);
+
+
+        selectedPowerUps.forEach((powerUp, index) => {
+            const yPos = 200 + index * 100;
+            const powerUpButton = this.add.text(400, yPos, powerUp.name, {
                 fontSize: '32px',
                 color: '#ffffff'
             }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectPowerUp(powerUp.powerUpKey));
 
-            this.add.text(powerUp.position.x, powerUp.position.y + 40, powerUp.description, {
+            this.add.text(400, yPos + 40, powerUp.description, {
                 fontSize: '18px',
                 color: '#aaaaaa'
             }).setOrigin(0.5);
@@ -45,6 +72,8 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
     }
 
     selectPowerUp(powerUp) {
-        this.scene.start('GameScene', { selectedPowerUp: powerUp });
+        
+        this.selectedPowerUps.push(powerUp);
+        this.scene.start('GameScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
     }
 }

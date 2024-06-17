@@ -30,10 +30,12 @@ export default class GameScene extends Phaser.Scene {
         this.player = null;
         this.playerSpeed = 200;
         this.playerAttack = 25;
+        this.playerAttackSpeed = 10;
         this.playerHealth = 100;
         this.playerMaxHealth = 100;
         this.playerHealthBar = null;
         this.playerHealthBarRed = null;
+        this.healHeath = 0;
 
         this.lightRadius = 100; 
         this.lightDecreaseRate = 3; 
@@ -46,8 +48,11 @@ export default class GameScene extends Phaser.Scene {
         this.mapVisible = false;
         this.layer1 = null;
         this.lightFlash = null;
+        
 
         this.skillFrames = [];
+        this.selectedSkills = [];
+        this.selectedPowerUps = [];
     }
 
     preload() {
@@ -68,8 +73,10 @@ export default class GameScene extends Phaser.Scene {
         this.playerHealth = this.playerMaxHealth;
         this.killCount = 0;
         this.lightRadius = 100; 
-        this.selectedSkill = data.selectedSkill;
-        this.selectedPowerUp = data.selectedPowerUp;
+        this.selectedSkills = data.selectedSkills || [];  
+        this.selectedPowerUps = data.selectedPowerUps || [];
+        console.log(this.selectedSkills);
+        console.log(this.selectedPowerUps);
     }
 
     create() {
@@ -79,13 +86,20 @@ export default class GameScene extends Phaser.Scene {
 
         this.setupAnimations();
         this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-        if (this.selectedSkill === 'fireball') {
-            this.fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
-        } else if (this.selectedSkill === 'darkAttack') {
-            this.darkAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
-        } else if (this.selectedSkill === 'flash') {
-            this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
-        }
+
+        this.selectedSkills.forEach(skill => {
+            switch (skill) {
+                case 'fireball':
+                    this.fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+                    break;
+                case 'darkAttack':
+                    this.darkAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+                    break;
+                case 'flash':
+                    this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+                    break;
+            }
+        });
 
         this.player = this.physics.add.sprite(400, 300, 'player').setScale(2);
 
@@ -135,15 +149,17 @@ export default class GameScene extends Phaser.Scene {
 
         const baseX = 60;
         const baseY = 560;
-
-        if (this.selectedSkill === 'fireball') {
-            this.addSkillFrame(baseX, baseY, 'fireball');
-        } else if (this.selectedSkill === 'darkAttack') {
-            this.addSkillFrame(baseX, baseY, 'DarkAttack1');
-        } else if (this.selectedSkill === 'flash') {
-            this.addSkillFrame(baseX, baseY, 'flash');
-        }
-
+        const frameOffset = 70;
+        this.selectedSkills.forEach((skill, index) => {
+            if (skill === 'fireball') {
+                this.addSkillFrame(baseX + index * frameOffset, baseY, 'fireball');
+            } else if (skill === 'darkAttack') {
+                this.addSkillFrame(baseX + index * frameOffset, baseY, 'DarkAttack1');
+            } else if (skill === 'flash') {
+                this.addSkillFrame(baseX + index * frameOffset, baseY, 'flash');
+            }
+        });
+    
         this.playerHealthBarBg = this.add.sprite(10, 20, 'lifebar1').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBar = this.add.sprite(10, 20, 'lifebar2').setOrigin(0, 0).setScale(2.5);
         this.playerHealthBarBg.setDepth(10);
@@ -181,19 +197,28 @@ export default class GameScene extends Phaser.Scene {
         this.lightFlash.fillStyle(0xffffe0, 1);
         this.lightFlash.setAlpha(0);
 
-        if (this.selectedPowerUp) {
-            this.applyPowerUp(this.selectedPowerUp);
-        }
+        this.selectedPowerUps.forEach(powerUp => {
+            this.applyPowerUp(powerUp);
+        });
+
+    
     }
 
     applyPowerUp(powerUp) {
         if (powerUp === 'health') {
-            this.playerMaxHealth += 50;
+            this.playerMaxHealth = 150;
             this.playerHealth = 150;    
         } else if (powerUp === 'attack') {  
             this.playerAttack = 55;
         } else if (powerUp === 'speed') {
             this.playerSpeed = 300; 
+        } else if (powerUp === 'attackSpeed') {
+            this.playerAttackSpeed = 20;
+        } else if (powerUp === 'cooldownReduction') {
+            this.fireballCooldownTime = 1000;
+            this.darkAttacksCooldownTime = 2000;
+        } else if (powerUp === 'healOnKill') {
+            this.healHeath = 10;
         }
     }
 
@@ -289,18 +314,20 @@ export default class GameScene extends Phaser.Scene {
         if (!isMoving && !attack) {
             this.player.anims.stop();
         }
-    
-        if (this.selectedSkill === 'fireball' && Phaser.Input.Keyboard.JustDown(this.fireballKey) && this.canShootFireball) {
+
+        if (this.fireballKey && Phaser.Input.Keyboard.JustDown(this.fireballKey) && this.canShootFireball) {
             this.shootFireball();
         }
-
-        if (this.selectedSkill === 'darkAttack' && Phaser.Input.Keyboard.JustDown(this.darkAttackKey) && this.canDarkAttack) {
+    
+        if (this.darkAttackKey && Phaser.Input.Keyboard.JustDown(this.darkAttackKey) && this.canDarkAttack) {
             this.DarkAttack();
         }
-
-        if (this.selectedSkill === 'flash' && Phaser.Input.Keyboard.JustDown(this.mapFlashKey)) {
-            this.flashMap(this.layer1); 
+    
+        if (this.mapFlashKey && Phaser.Input.Keyboard.JustDown(this.mapFlashKey)) {
+            this.flashMap(this.layer1);
         }
+    
+        
         if (this.enemy) {
             const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y);
             if (distance < this.enemyAttackRange) {
@@ -375,7 +402,7 @@ export default class GameScene extends Phaser.Scene {
         this.anims.create({
             key: 'attackbackwards',
             frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
-            frameRate: 10,
+            frameRate: this.playerAttackSpeed,
             repeat: 0
         });
     }
@@ -384,7 +411,7 @@ export default class GameScene extends Phaser.Scene {
         this.anims.create({
             key: 'attackright',
             frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
-            frameRate: 10,
+            frameRate: this.playerAttackSpeed,
             repeat: 0
         });
     }
@@ -393,7 +420,7 @@ export default class GameScene extends Phaser.Scene {
         this.anims.create({
             key: 'attackleft',
             frames: this.anims.generateFrameNumbers('player', { start: 21, end: 24 }),
-            frameRate: 10,
+            frameRate: this.playerAttackSpeed,
             repeat: 0
         });
     }
@@ -402,7 +429,7 @@ export default class GameScene extends Phaser.Scene {
         this.anims.create({
             key: 'attackforward',
             frames: this.anims.generateFrameNumbers('player', { start: 53, end: 56 }),
-            frameRate: 10,
+            frameRate: this.playerAttackSpeed,
             repeat: 0
         });
     }
@@ -502,7 +529,7 @@ export default class GameScene extends Phaser.Scene {
                 this.increaseLightRadius();
                 this.incrementKillCount();
                 if (this.playerHealth + 10 < this.playerMaxHealth) {
-                    this.playerHealth += 10;
+                    this.playerHealth += this.healHeath;
                 }
             }
         }
@@ -714,8 +741,17 @@ export default class GameScene extends Phaser.Scene {
     }
 
     handleMaxKillsReached() {
-
         console.log("Limite máximo de kills atingido!");
-        this.scene.pause(); 
+    
+        const randomScene = Math.random();
+    
+        if (randomScene < 0.5) {
+           
+            this.scene.start('SkillSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
+        } else {
+            
+            this.scene.start('PowerUpSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
+        }
     }
+    
 }
