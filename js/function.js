@@ -52,6 +52,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.skillFrames = [];
         this.selectedSkills = [];
+        this.selectedPowerUps = [];
     }
 
     preload() {
@@ -70,9 +71,10 @@ export default class GameScene extends Phaser.Scene {
         this.playerHealth = this.playerMaxHealth;
         this.killCount = 0;
         this.lightRadius = 100; 
-        this.selectedSkills.push(data.selectedSkill);
+        this.selectedSkills = data.selectedSkills || [];  
+        this.selectedPowerUps = data.selectedPowerUps || [];
         console.log(this.selectedSkills);
-        this.selectedPowerUp = data.selectedPowerUp;
+        console.log(this.selectedPowerUps);
     }
 
     create() {
@@ -193,14 +195,16 @@ export default class GameScene extends Phaser.Scene {
         this.lightFlash.fillStyle(0xffffe0, 1);
         this.lightFlash.setAlpha(0);
 
-        if (this.selectedPowerUp) {
-            this.applyPowerUp(this.selectedPowerUp);
-        }
+        this.selectedPowerUps.forEach(powerUp => {
+            this.applyPowerUp(powerUp);
+        });
+
+    
     }
 
     applyPowerUp(powerUp) {
         if (powerUp === 'health') {
-            this.playerMaxHealth += 50;
+            this.playerMaxHealth = 150;
             this.playerHealth = 150;    
         } else if (powerUp === 'attack') {  
             this.playerAttack = 55;
@@ -396,7 +400,7 @@ export default class GameScene extends Phaser.Scene {
         this.anims.create({
             key: 'attackbackwards',
             frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
-            frameRate: 10,
+            frameRate: this.playerAttackSpeed,
             repeat: 0
         });
     }
@@ -405,7 +409,7 @@ export default class GameScene extends Phaser.Scene {
         this.anims.create({
             key: 'attackright',
             frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
-            frameRate: 10,
+            frameRate: this.playerAttackSpeed,
             repeat: 0
         });
     }
@@ -414,7 +418,7 @@ export default class GameScene extends Phaser.Scene {
         this.anims.create({
             key: 'attackleft',
             frames: this.anims.generateFrameNumbers('player', { start: 21, end: 24 }),
-            frameRate: 10,
+            frameRate: this.playerAttackSpeed,
             repeat: 0
         });
     }
@@ -423,7 +427,7 @@ export default class GameScene extends Phaser.Scene {
         this.anims.create({
             key: 'attackforward',
             frames: this.anims.generateFrameNumbers('player', { start: 53, end: 56 }),
-            frameRate: 10,
+            frameRate: this.playerAttackSpeed,
             repeat: 0
         });
     }
@@ -735,8 +739,17 @@ export default class GameScene extends Phaser.Scene {
     }
 
     handleMaxKillsReached() {
-
         console.log("Limite máximo de kills atingido!");
-        this.scene.start('SkillSelectionScene');
+    
+        const randomScene = Math.random();
+    
+        if (randomScene < 0.5) {
+           
+            this.scene.start('SkillSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
+        } else {
+            
+            this.scene.start('PowerUpSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
+        }
     }
+    
 }
