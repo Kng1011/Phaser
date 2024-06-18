@@ -75,6 +75,8 @@ export default class GameScene extends Phaser.Scene {
         this.lightRadius = 100; 
         this.selectedSkills = data.selectedSkills || [];  
         this.selectedPowerUps = data.selectedPowerUps || [];
+        this.canShootFireball = true;
+        this.canDarkAttack = true;
         console.log(this.selectedSkills);
         console.log(this.selectedPowerUps);
     }
