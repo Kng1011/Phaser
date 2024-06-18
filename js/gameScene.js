@@ -11,11 +11,12 @@ export default class GameScene extends Phaser.Scene {
         this.fireballKey = null;
         this.darkAttackKey = null;
         this.mapFlashKey = null;
+        this.darkBoltAttackKey = null;
 
         this.enemy = null;
         this.enemyHealth = 100;
         this.enemyHealthBar = null;
-        this.enemyAttackRange = 50;
+        this.enemyAttackRange = 25;
 
         this.selectedSkill = null;
         this.darkattacks = null;
@@ -26,6 +27,10 @@ export default class GameScene extends Phaser.Scene {
         this.canShootFireball = true;
         this.fireballCooldownTime = 2000; 
         this.fireballCooldownGraphic = null;
+        this.darkBoltAttack = null;
+        this.canDarkBoltAttack = true;
+        this.darkBoltAttackCooldownTime = 8000;
+        this.darkBoltAttackCooldownTimeGraphic = null;
         
         this.player = null;
         this.playerSpeed = 200;
@@ -48,6 +53,8 @@ export default class GameScene extends Phaser.Scene {
         this.mapVisible = false;
         this.layer1 = null;
         this.lightFlash = null;
+
+        this.enemies = [];
         
 
         this.skillFrames = [];
@@ -61,6 +68,7 @@ export default class GameScene extends Phaser.Scene {
         this.load.spritesheet('player', 'assets/player.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('fireball', 'assets/fireball.png', { frameWidth: 64, frameHeight: 32 });
         this.load.spritesheet('DarkAttack1', 'assets/DarkVFX1.png', { frameWidth: 40, frameHeight: 32 });
+        this.load.spritesheet('boltdark', 'assets/DarkBolt.png', { frameWidth: 64, frameHeight: 88 });
         this.load.image('Frame', 'assets/Frame.png');
         this.load.image('lifebar1', 'assets/Lifebar1.png');
         this.load.image('lifebar2', 'assets/Lifebar2.png');
@@ -75,6 +83,9 @@ export default class GameScene extends Phaser.Scene {
         this.lightRadius = 100; 
         this.selectedSkills = data.selectedSkills || [];  
         this.selectedPowerUps = data.selectedPowerUps || [];
+        this.canShootFireball = true;
+        this.canDarkAttack = true;
+        this.canDarkBoltAttack = true;
         console.log(this.selectedSkills);
         console.log(this.selectedPowerUps);
     }
@@ -98,11 +109,53 @@ export default class GameScene extends Phaser.Scene {
                 case 'flash':
                     this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
                     break;
+                case 'darkBoltAttack':
+                    this.darkBoltAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+                    break;
             }
         });
 
         this.player = this.physics.add.sprite(400, 300, 'player').setScale(2);
 
+        this.enemies = [
+            {
+                key: 'zombie',
+                health: 100,
+                attack: 10,
+                speed: 50,
+                attackSpeed: 1000,
+                attackRange: 25
+            },
+            {
+                key: 'troll',
+                health: 200,
+                attack: 20,
+                speed: 100,
+                attackSpeed: 1500,
+                attackRange: 30
+            },
+            {
+                key: 'skeleton',
+                health: 50,
+                attack: 5,
+                speed: 150,
+                attackSpeed: 500,
+                attackRange: 20
+            }
+        ]
+
+        const randomIndex = Math.floor(Math.random() * this.enemies.length);
+        const enemyType = this.enemies[randomIndex];
+        this.spawnEnemy(enemyType.key);
+        this.enemy.key = enemyType.key;
+        this.enemy.health = enemyType.health;
+        this.enemy.attack = enemyType.attack;
+        this.enemy.speed = enemyType.speed;
+        this.enemy.attackSpeed = enemyType.attackSpeed;
+        this.enemy.attackRange = enemyType.attackRange;
+        console.log(this.enemy.key);
+        this.setupEnemyAnimation(enemyType.key);
+    
         this.darkness = this.make.graphics();
         this.darkness.fillStyle(0x000000, 1);
         this.darkness.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
@@ -125,8 +178,6 @@ export default class GameScene extends Phaser.Scene {
             right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
         };
 
-        this.spawnEnemy();
-    
 
         this.fireballs = this.physics.add.group({
             defaultKey: 'fireball',
@@ -135,6 +186,11 @@ export default class GameScene extends Phaser.Scene {
 
         this.darkattacks = this.physics.add.group({
             defaultKey: 'DarkAttack1',
+            maxSize: 100
+        });
+
+        this.darkBoltAttacks = this.physics.add.group({
+            defaultKey: 'boltdark',
             maxSize: 100
         });
 
@@ -157,6 +213,8 @@ export default class GameScene extends Phaser.Scene {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'DarkAttack1');
             } else if (skill === 'flash') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'flash');
+            } else if (skill === 'darkBoltAttack') {
+                this.addSkillFrame(baseX + index * frameOffset, baseY, 'darkBoltAttack');
             }
         });
     
@@ -201,6 +259,12 @@ export default class GameScene extends Phaser.Scene {
             this.applyPowerUp(powerUp);
         });
 
+        this.physics.world.createDebugGraphic();
+
+        this.fireballs.children.iterate((fireball) => {
+            this.physics.world.enableBody(fireball, Phaser.Physics.Arcade.DYNAMIC_BODY);
+            fireball.body.setCircle(15);  
+        });
     
     }
 
@@ -217,6 +281,7 @@ export default class GameScene extends Phaser.Scene {
         } else if (powerUp === 'cooldownReduction') {
             this.fireballCooldownTime = 1000;
             this.darkAttacksCooldownTime = 2000;
+            this.darkBoltAttackCooldownTime = 4000;
         } else if (powerUp === 'healOnKill') {
             this.healHeath = 10;
         }
@@ -233,6 +298,9 @@ export default class GameScene extends Phaser.Scene {
             this.darkAttacksCooldownTimeGraphic = skillGraphic;
         } else if (skill === 'flash') {
             skillGraphic = this.add.text(x , y, 'Flash', { fontSize: '20px', color: '#ffffff' }).setOrigin(0.5);
+        } else if (skill === 'darkBoltAttack') {
+            skillGraphic = this.add.sprite(x - 10 , y - 12, 'boltdark', 3).setScale(0.9);
+            this.darkBoltAttackCooldownTimeGraphic = skillGraphic;
         }
         frame.setDepth(10);
         skillGraphic.setDepth(11);
@@ -326,23 +394,40 @@ export default class GameScene extends Phaser.Scene {
         if (this.mapFlashKey && Phaser.Input.Keyboard.JustDown(this.mapFlashKey)) {
             this.flashMap(this.layer1);
         }
+
+        if (this.darkBoltAttackKey && Phaser.Input.Keyboard.JustDown(this.darkBoltAttackKey) && this.canDarkBoltAttack) {
+            this.darkBoltAttack1();
+        }
     
-        
         if (this.enemy) {
             const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y);
+        
             if (distance < this.enemyAttackRange) {
-                if (!this.enemy.anims.isPlaying || this.enemy.anims.currentAnim.key !== 'enemyAttack') {
-                    this.enemy.anims.play('enemyAttack', true);
+                this.enemy.setVelocity(0, 0);
+
+                if (this.enemy.anims.currentAnim.key !==  this.enemy.key + 'Attack') {
+                    this.time.addEvent({
+                        delay: 1500, 
+                        callback: () => {
+                            this.enemy.anims.play( this.enemy.key + 'Attack', true);
+                        },
+                        callbackScope: this,
+                        loop: true 
+                    });
+                }
+        
+                if (!this.enemyAttackTimer || this.time.now > this.enemyAttackTimer) {
                     if (this.playerHealth > 0) {
-                        this.playerHealth -= 5;
+                        this.playerHealth -= 5; 
                     }
+                    this.enemyAttackTimer = this.time.now + 1000; 
                 }
             } else {
+               
                 this.physics.moveToObject(this.enemy, this.player, 100);
-                this.updateEnemyAnimation();
+                this.updateEnemyAnimation(this.enemy.body.velocity);
             }
-
-            
+        
             const isEnemyVisible = distance <= this.lightRadius;
             this.enemy.setVisible(isEnemyVisible);
             this.enemyHealthBar.setVisible(isEnemyVisible);
@@ -350,11 +435,183 @@ export default class GameScene extends Phaser.Scene {
     
         this.updatePlayerHealthBar();
         this.updateEnemyHealthBar();
-
         this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
 
+      
+    }
+
+    updateEnemyAnimation(velocity) {
+
+        if (this.direction === 'right') {
+            this.enemy.anims.play( this.enemy.key + 'WalkRight', true);
+        } else if (this.direction === 'left') {
+            this.enemy.anims.play( this.enemy.key + 'WalkLeft', true);
+        } else if (this.direction === 'forward') {
+            this.enemy.anims.play( this.enemy.key + 'WalkForward', true);
+        } else if (this.direction === 'backwards') {
+            this.enemy.anims.play( this.enemy.key + 'WalkBackwards', true);
+        }
+    }   
+
+    setupEnemyAnimation(enemyType) {
+        switch (enemyType) {
+            case 'zombie':
+                this.setupZombieAnimations();
+                break;
+            case 'troll':
+                this.setupTrollAnimations();
+                break;
+            case 'skeleton':
+                this.setupSkeletonAnimations();
+                break;
+            default:
+                return;
+        }
     }
     
+    setupZombieAnimations() {
+        if (!this.anims.exists('zombieWalkBackwards')) {
+            this.anims.create({
+                key: 'zombieWalkBackwards',
+                frames: this.anims.generateFrameNumbers('zombie', { start: 6, end: 7 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+    
+        if (!this.anims.exists('zombieWalkForward')) {
+            this.anims.create({
+                key: 'zombieWalkForward',
+                frames: this.anims.generateFrameNumbers('zombie', { start: 10, end: 11 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+    
+        if (!this.anims.exists('zombieWalkRight')) {
+            this.anims.create({
+                key: 'zombieWalkRight',
+                frames: this.anims.generateFrameNumbers('zombie', { start: 8, end: 9 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+    
+        if (!this.anims.exists('zombieWalkLeft')) {
+            this.anims.create({
+                key: 'zombieWalkLeft',
+                frames: this.anims.generateFrameNumbers('zombie', { start: 8, end: 9 }),
+                frameRate: 10,
+                repeat: -1,
+                yoyo: true // Inverte a animação
+            });
+        }
+    
+        if (!this.anims.exists('zombieAttack')) {
+            this.anims.create({
+                key: 'zombieAttack',
+                frames: this.anims.generateFrameNumbers('zombie', { start: 12, end: 13 }),
+                frameRate: 5,
+                repeat: -1
+            });
+        }
+    }
+    
+    setupTrollAnimations() {
+        if (!this.anims.exists('trollWalkBackwards')) {
+            this.anims.create({
+                key: 'trollWalkBackwards',
+                frames: this.anims.generateFrameNumbers('troll', { start: 8, end: 9 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+    
+        if (!this.anims.exists('trollWalkForward')) {
+            this.anims.create({
+                key: 'trollWalkForward',
+                frames: this.anims.generateFrameNumbers('troll', { start: 12, end: 13 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+    
+        if (!this.anims.exists('trollWalkRight')) {
+            this.anims.create({
+                key: 'trollWalkRight',
+                frames: this.anims.generateFrameNumbers('troll', { start: 14, end: 15 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+    
+        if (!this.anims.exists('trollWalkLeft')) {
+            this.anims.create({
+                key: 'trollWalkLeft',
+                frames: this.anims.generateFrameNumbers('troll', { start: 14, end: 15 }),
+                frameRate: 10,
+                repeat: -1,
+                yoyo: true // Inverte a animação
+            });
+        }
+    
+        if (!this.anims.exists('trollAttack')) {
+            this.anims.create({
+                key: 'trollAttack',
+                frames: this.anims.generateFrameNumbers('troll', { start: 16, end: 17 }),
+                frameRate: 5,
+                repeat: -1
+            });
+        }
+    }
+    
+    setupSkeletonAnimations() {
+        if (!this.anims.exists('skeletonWalkBackwards')) {
+            this.anims.create({
+                key: 'skeletonWalkBackwards',
+                frames: this.anims.generateFrameNumbers('skeleton', { start: 6, end: 7 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+    
+        if (!this.anims.exists('skeletonWalkForward')) {
+            this.anims.create({
+                key: 'skeletonWalkForward',
+                frames: this.anims.generateFrameNumbers('skeleton', { start: 10, end: 11 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+    
+        if (!this.anims.exists('skeletonWalkRight')) {
+            this.anims.create({
+                key: 'skeletonWalkRight',
+                frames: this.anims.generateFrameNumbers('skeleton', { start: 8, end: 9 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+    
+        if (!this.anims.exists('skeletonWalkLeft')) {
+            this.anims.create({
+                key: 'skeletonWalkLeft',
+                frames: this.anims.generateFrameNumbers('skeleton', { start: 8, end: 9 }),
+                frameRate: 10,
+                repeat: -1,
+                yoyo: true // Inverte a animação
+            });
+        }
+    
+        if (!this.anims.exists('skeletonAttack')) {
+            this.anims.create({
+                key: 'skeletonAttack',
+                frames: this.anims.generateFrameNumbers('skeleton', { start: 12, end: 13 }),
+                frameRate: 5,
+                repeat: -1
+            });
+        }
+    }
 
     setupAnimations() {
  
@@ -434,54 +691,6 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    if (!this.anims.exists('enemyWalkBackwards')) {
-        this.anims.create({
-            key: 'enemyWalkBackwards',
-            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 7 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('enemyWalkForward')) {
-        this.anims.create({
-            key: 'enemyWalkForward',
-            frames: this.anims.generateFrameNumbers('player', { start: 48, end: 55 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('enemyWalkRight')) {
-        this.anims.create({
-            key: 'enemyWalkRight',
-            frames: this.anims.generateFrameNumbers('player', { start: 32, end: 39 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
- 
-    if (!this.anims.exists('enemyWalkLeft')) {
-        this.anims.create({
-            key: 'enemyWalkLeft',
-            frames: this.anims.generateFrameNumbers('player', { start: 16, end: 23 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-   
-    if (!this.anims.exists('enemyAttack')) {
-        this.anims.create({
-            key: 'enemyAttack',
-            frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-  
     if (!this.anims.exists('fireballAnim')) {
         this.anims.create({
             key: 'fireballAnim',
@@ -508,12 +717,21 @@ export default class GameScene extends Phaser.Scene {
             repeat: 1
         });
     }
+
+    if(!this.anims.exists('DarkBoltAttackAnim')){
+        this.anims.create({
+            key: 'DarkBoltAttackAnim',
+            frames: this.anims.generateFrameNumbers('boltdark', { start: 0, end: 10 }),
+            frameRate: 10,
+            repeat: 0
+        });
+    }
 }
 
-    spawnEnemy() {
+    spawnEnemy(enemytype) {
         const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
         const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
-        this.enemy = this.physics.add.sprite(randomX, randomY, 'player').setScale(2);
+        this.enemy = this.physics.add.sprite(randomX, randomY, enemytype).setScale(2);
         this.enemyHealth = 100;
         this.enemyHealthBar = this.add.graphics();
         this.updateEnemyHealthBar();
@@ -544,41 +762,41 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    updateEnemyAnimation() {
-        if (this.enemy.body.velocity.x > 0) {
-            this.enemy.anims.play('enemyWalkRight', true);
-        } else if (this.enemy.body.velocity.x < 0) {
-            this.enemy.anims.play('enemyWalkLeft', true);
-        } else if (this.enemy.body.velocity.y > 0) {
-            this.enemy.anims.play('enemyWalkForward', true);
-        } else if (this.enemy.body.velocity.y < 0) {
-            this.enemy.anims.play('enemyWalkBackwards', true);
-        }
-    }
 
     flashMap(layer) {
         if (!this.mapVisible) {
-            layer.clearMask();
-            this.mapVisible = true;
+            this.mapVisible = true; this.lightFlash.clear();
 
-            
-            this.lightFlash.clear();
+
             this.lightFlash.fillStyle(0xffffe0, 1);
             this.lightFlash.setAlpha(1);
             this.lightFlash.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
-            
-            
+
             this.time.delayedCall(200, () => {
                 this.lightFlash.setAlpha(0);
             }, [], this);
-            
-            
+
+            const originalLightRadius = this.lightRadius;
+            this.lightRadius = this.cameras.main.width; 
+            this.updateLightMask();
+    
             this.time.delayedCall(1000, () => {
-                layer.setMask(this.darkness.createBitmapMask(this.lightMask));
+                this.lightRadius = originalLightRadius;
+                this.updateLightMask();
                 this.mapVisible = false;
             }, [], this);
         }
     }
+    
+    updateLightMask() {
+        this.lightMask.clear();
+        this.lightMask.fillStyle(0xffffff, 1);
+        this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
+        const mask = this.darkness.createBitmapMask(this.lightMask);
+        this.layer1.setMask(mask);
+        this.player.setMask(mask);
+    }
+    
 
     shootFireball() {
     if (!this.canShootFireball) return;
@@ -586,6 +804,9 @@ export default class GameScene extends Phaser.Scene {
     this.fireballCooldownGraphic.setTint(0xff0000);
 
     const fireball = this.fireballs.get(this.player.x, this.player.y, 'fireball').setScale(2);
+    fireball.body.setSize(32, 32);
+    fireball.body.setOffset((fireball.width -32) / 2, (fireball.height- 32 ) / 2);
+    
     fireball.anims.play('fireballAnim');
 
     fireball.fireballLightRadius = this.fireballLightRadius;
@@ -667,11 +888,50 @@ export default class GameScene extends Phaser.Scene {
             callbackScope: this
         });
     }
-    
 
+    darkBoltAttack1() {
+        if (!this.canDarkBoltAttack) return;
+        this.canDarkBoltAttack = false;
     
-    hitEnemy(atacck, enemy) {
-        atacck.destroy();
+        if (this.darkBoltAttackCooldownTimeGraphic)
+            this.darkBoltAttackCooldownTimeGraphic.setTint(0xff0000);
+    
+        const numBolts = 8; 
+        const radius = 100; 
+    
+        for (let i = 0; i < numBolts; i++) {
+           
+            const angle = Phaser.Math.FloatBetween(0, 2 * Math.PI);
+            
+            const posX = this.player.x + radius * Math.cos(angle);
+            const posY = this.player.y + radius * Math.sin(angle);
+    
+            const darkBoltAttack = this.darkBoltAttacks.create(posX, posY, 'boltdark').setScale(2);
+            darkBoltAttack.anims.play('DarkBoltAttackAnim');
+    
+            this.physics.add.collider(darkBoltAttack, this.enemy, (darkBoltAttack, enemy) => {
+                this.hitEnemy2(darkBoltAttack, enemy);
+            }, null, this);
+    
+            darkBoltAttack.on('animationcomplete', () => {
+                darkBoltAttack.destroy(); 
+            });
+        }
+    
+        this.time.addEvent({
+            delay: this.darkBoltAttackCooldownTime,
+            callback: () => {
+                this.canDarkBoltAttack = true;
+                if (this.darkBoltAttackCooldownTimeGraphic)
+                    this.darkBoltAttackCooldownTimeGraphic.clearTint();
+            },
+            callbackScope: this
+        });
+    }
+    
+    
+    hitEnemy(attack, enemy) {
+        attack.destroy();
         this.enemyHealth -= 100;
         if (this.enemyHealth <= 0) {
             this.enemy.destroy();
@@ -682,7 +942,7 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    hitEnemy2(atacck, enemy) {
+    hitEnemy2(attack, enemy) {
 
         if(!attack.anims.isPlaying){
         atacck.destroy();
