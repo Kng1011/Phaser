@@ -29,7 +29,7 @@ export default class GameScene extends Phaser.Scene {
         this.fireballCooldownGraphic = null;
         this.darkBoltAttack = null;
         this.canDarkBoltAttack = true;
-        this.darkBoltAttackCooldownTime = 4500;
+        this.darkBoltAttackCooldownTime = 8000;
         this.darkBoltAttackCooldownTimeGraphic = null;
         
         this.player = null;
@@ -236,6 +236,7 @@ export default class GameScene extends Phaser.Scene {
         } else if (powerUp === 'cooldownReduction') {
             this.fireballCooldownTime = 1000;
             this.darkAttacksCooldownTime = 2000;
+            this.darkBoltAttackCooldownTime = 4000;
         } else if (powerUp === 'healOnKill') {
             this.healHeath = 10;
         }
@@ -724,32 +725,47 @@ export default class GameScene extends Phaser.Scene {
     }
 
     darkBoltAttack1() {
-
         if (!this.canDarkBoltAttack) return;
         this.canDarkBoltAttack = false;
+    
         if (this.darkBoltAttackCooldownTimeGraphic)
-        this.darkBoltAttackCooldownTimeGraphic.setTint(0xff0000);
-
-        const darkBoltAttack = this.darkBoltAttacks.get(this.player.x, this.player.y, 'boltdark').setScale(2);
-        darkBoltAttack.anims.play('DarkBoltAttackAnim');
-
-        this.physics.add.collider(darkBoltAttack, this.enemy, (darkBoltAttack, enemy) => {
-            this.hitEnemy2(darkBoltAttack, enemy);
-        }, null, this);
-
-        darkBoltAttack.on('animationcomplete', () => {
-            darkBoltAttack.destroy(); 
-        });
-
+            this.darkBoltAttackCooldownTimeGraphic.setTint(0xff0000);
+    
+        const numBolts = 8; 
+        const radius = 100; 
+    
+        for (let i = 0; i < numBolts; i++) {
+           
+            const angle = Phaser.Math.FloatBetween(0, 2 * Math.PI);
+            
+            const posX = this.player.x + radius * Math.cos(angle);
+            const posY = this.player.y + radius * Math.sin(angle);
+    
+            const darkBoltAttack = this.darkBoltAttacks.create(posX, posY, 'boltdark').setScale(2);
+            darkBoltAttack.anims.play('DarkBoltAttackAnim');
+    
+            this.physics.add.collider(darkBoltAttack, this.enemy, (darkBoltAttack, enemy) => {
+                this.hitEnemy2(darkBoltAttack, enemy);
+            }, null, this);
+    
+            darkBoltAttack.on('animationcomplete', () => {
+                darkBoltAttack.destroy(); 
+            });
+        }
+    
         this.time.addEvent({
             delay: this.darkBoltAttackCooldownTime,
             callback: () => {
                 this.canDarkBoltAttack = true;
-                this.darkBoltAttackCooldownTimeGraphic.clearTint();
+                if (this.darkBoltAttackCooldownTimeGraphic)
+                    this.darkBoltAttackCooldownTimeGraphic.clearTint();
             },
             callbackScope: this
         });
     }
+    
+    
+    
 
     
     hitEnemy(attack, enemy) {

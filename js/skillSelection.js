@@ -38,7 +38,7 @@ export default class SkillSelectionScene extends Phaser.Scene {
             {
                 name: 'DarkBolt',
                 description: 'Shoot multiple dark bolts that deals damage to enemies.',
-                cooldown: 'Cooldown: 4.5 seconds',
+                cooldown: 'Cooldown: 8 seconds',
                 skillKey: 'darkBoltAttack'
             }
         ];
