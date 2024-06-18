@@ -385,15 +385,16 @@ export default class GameScene extends Phaser.Scene {
                 }
             } else {
                 this.physics.moveToObject(enemy, this.player, 100);
-                this.updateEnemyAnimation(enemy); // Passa o inimigo para a função de atualização de animação
+                // Passa o tipo de inimigo (enemy.type) para a função de atualização de animação
+                this.updateEnemyAnimation(enemy.body.velocity, enemy.type);
             }
         
-                const isEnemyVisible = distance <= this.lightRadius;
-                enemy.setVisible(isEnemyVisible);
-                if (enemy.healthBar) {
-                    enemy.healthBar.setVisible(isEnemyVisible);
-                }
-            });
+            const isEnemyVisible = distance <= this.lightRadius;
+            enemy.setVisible(isEnemyVisible);
+            if (enemy.healthBar) {
+                enemy.healthBar.setVisible(isEnemyVisible);
+            }
+        });
         
         this.updatePlayerHealthBar();
         this.updateEnemyHealthBar();
@@ -401,15 +402,47 @@ export default class GameScene extends Phaser.Scene {
 
     }
 
-    updateEnemyAnimation(velocity) {
-    if (velocity.x > 0) {
-        this.enemy.anims.play('enemyWalkRight', true);
-    } else if (velocity.x < 0) {
-        this.enemy.anims.play('enemyWalkLeft', true);
-    } else if (velocity.y > 0) {
-        this.enemy.anims.play('enemyWalkForward', true);
-    } else if (velocity.y < 0) {
-        this.enemy.anims.play('enemyWalkBackwards', true);
+    updateEnemyAnimation(velocity, enemyType) {
+        let animationsConfig = {
+            zombie: {
+                walkRight: 'zombieWalkRight',
+                walkLeft: 'zombieWalkLeft',
+                walkForward: 'zombieWalkForward',
+                walkBackwards: 'zombieWalkBackwards'
+            },
+            troll: {
+                walkRight: 'trollWalkRight',
+                walkLeft: 'trollWalkLeft',
+                walkForward: 'trollWalkForward',
+                walkBackwards: 'trollWalkBackwards'
+            },
+            skeleton: {
+                walkRight: 'skeletonWalkRight',
+                walkLeft: 'skeletonWalkLeft',
+                walkForward: 'skeletonWalkForward',
+                walkBackwards: 'skeletonWalkBackwards'
+            }
+        };
+    
+        let animations = animationsConfig[enemyType];
+    
+        if (!animations) {
+            console.error(`Unknown enemy type: ${enemyType}`);
+            return;
+        }
+    
+        if (velocity.x > 0) {
+            this.enemy.anims.play(animations.walkRight, true);
+        } else if (velocity.x < 0) {
+            this.enemy.anims.play(animations.walkLeft, true);
+        } else if (velocity.y > 0) {
+            this.enemy.anims.play(animations.walkForward, true);
+        } else if (velocity.y < 0) {
+            this.enemy.anims.play(animations.walkBackwards, true);
+        } else {
+            // Se nenhuma das condições acima for verdadeira, pare a animação
+            this.enemy.anims.stop();
+        }
     }
 }
 
