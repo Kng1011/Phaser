@@ -17,12 +17,24 @@ export default class ControlsScene extends Phaser.Scene {
 
     create() {
         // Adicionando as imagens
-        const letras = this.add.sprite(150, 100, 'letras').setScale(1);
+        const letras = this.add.sprite(150, 100, 'letras' ).setScale(1);
         const setas = this.add.sprite(650, 100, 'setas').setScale(1);
-        const E = this.add.sprite(150, 225, 'E').setScale(1);
-        const Q = this.add.sprite(200, 350, 'Q').setScale(1);
-        const Z = this.add.sprite(100, 350, 'Z').setScale(1);
-        const M = this.add.sprite(600, 350, 'M').setScale(1);
+        const E = this.add.text(150, 210, 'E',{
+            font: '15px Arial',
+            fill: '#ffffff'
+        }).setScale(2);
+        const Q = this.add.text(190, 350, 'Q', {
+            font: '15px Arial',
+            fill: '#ffffff'
+        }).setScale(2);
+        const Z = this.add.text(90, 350, 'Z', {
+            font: '15px Arial',
+            fill: '#ffffff'
+        }).setScale(2);
+        const M = this.add.text(590, 350, 'M', {
+            font: '15px Arial',
+            fill: '#ffffff'
+        }).setScale(2);
 
         // Calculando a posição do texto para ficar entre as duas imagens
         const textX = (letras.x + setas.x) / 2;
@@ -36,7 +48,7 @@ export default class ControlsScene extends Phaser.Scene {
 
         const text2 = this.add.text(textX, textY + 125, 'Basic Attack',
             {font: '32px Arial',
-             fill: '#fff'
+             fill: '#ffffff'
             }
         ).setOrigin(0.5);
 

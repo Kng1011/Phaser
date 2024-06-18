@@ -16,12 +16,7 @@ export default class MenuScene extends Phaser.Scene {
         const startButton = this.add.text(400, 300, 'Start Game', {
             font: '32px Arial',
             fill: '#fff'
-        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.startSkillSelection());
-
-        const powerUpButton = this.add.text(400, 350, 'Select Power-Up', {
-            font: '32px Arial',
-            fill: '#fff'
-        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.startPowerUpSelection());
+        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.startSelection());
 
         const controlsButton = this.add.text(400, 400, 'Controls', {
             font: '32px Arial',
@@ -29,12 +24,16 @@ export default class MenuScene extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.controls());
     }
 
-    startSkillSelection() {
-        this.scene.start('SkillSelectionScene');
-    }
+    startSelection() {
 
-    startPowerUpSelection() {
-        this.scene.start('PowerUpSelectionScene');
+        const randomScene = Math.random();
+
+        if (randomScene < 0.5) {
+            this.scene.start('SkillSelectionScene');
+        } else {    
+            this.scene.start('PowerUpSelectionScene');
+        }
+
     }
 
     controls() {
