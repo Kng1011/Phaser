@@ -12,9 +12,9 @@ export default class GameScene extends Phaser.Scene {
         this.darkAttackKey = null;
         this.mapFlashKey = null;
 
-        this.enemies = [];
+        this.enemy = null;
         this.enemyHealth = 100;
-        this.enemyHealthBars = [];
+        this.enemyHealthBar = null;
         this.enemyAttackRange = 50;
 
         this.selectedSkill = null;
@@ -125,11 +125,9 @@ export default class GameScene extends Phaser.Scene {
             right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
         };
 
-        const enemy = [{ name: 'zombie', enemykey: 'Zombie' },
-            { name: 'troll', enemykey: 'Troll' },
-            { name: 'skeleton', enemykey: 'Skeleton' }];
-        this.spawnEnemy(enemy);
+        this.spawnEnemy();
     
+
         this.fireballs = this.physics.add.group({
             defaultKey: 'fireball',
             maxSize: 100
@@ -330,41 +328,25 @@ export default class GameScene extends Phaser.Scene {
         }
     
         
-        // Dentro do método onde você itera sobre os inimigos (this.enemies.forEach)
-        this.enemies.forEach(enemy => {
-            if (!enemy.anims) {
-                return; // Evita processar inimigos sem animações definidas
-            }
-        
-            const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-        
-            if (distance < enemy.attackRange) {
-                enemy.setVelocity(0, 0);
-        
-                // Verifica se há uma animação atual e se não é nula antes de acessar a chave (key)
-                if (enemy.anims.currentAnim && enemy.anims.currentAnim.key !== `${enemy.type}Attack`) {
-                    enemy.anims.play(`${enemy.type}Attack`, true);
-                }
-        
-                if (!enemy.attackTimer || this.time.now > enemy.attackTimer) {
+        if (this.enemy) {
+            const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y);
+            if (distance < this.enemyAttackRange) {
+                if (!this.enemy.anims.isPlaying || this.enemy.anims.currentAnim.key !== 'enemyAttack') {
+                    this.enemy.anims.play('enemyAttack', true);
                     if (this.playerHealth > 0) {
-                        this.playerHealth -= 5; 
+                        this.playerHealth -= 5;
                     }
-                    enemy.attackTimer = this.time.now + 1000; // Define o próximo tempo de ataque para 1 segundo depois
                 }
             } else {
-                this.physics.moveToObject(enemy, this.player, 100);
-                this.updateEnemyAnimation(enemy); // Passa o inimigo para a função de atualização de animação
+                this.physics.moveToObject(this.enemy, this.player, 100);
+                this.updateEnemyAnimation();
             }
-        
-            const isEnemyVisible = distance <= this.lightRadius;
-            enemy.setVisible(isEnemyVisible);
-            if (enemy.healthBar) {
-                enemy.healthBar.setVisible(isEnemyVisible);
-            }
-        });
-        
 
+            
+            const isEnemyVisible = distance <= this.lightRadius;
+            this.enemy.setVisible(isEnemyVisible);
+            this.enemyHealthBar.setVisible(isEnemyVisible);
+        }
     
         this.updatePlayerHealthBar();
         this.updateEnemyHealthBar();
@@ -373,16 +355,6 @@ export default class GameScene extends Phaser.Scene {
 
     }
     
-    getRandomEnemyType() {
-        // Tipos de inimigos disponíveis
-        const enemyTypes = ['zombie', 'troll', 'skeleton'];
-
-        // Gerar um índice aleatório dentro do array enemyTypes
-        const randomIndex = Phaser.Math.RND.between(0, enemyTypes.length - 1);
-
-        // Retornar o tipo de inimigo correspondente ao índice gerado aleatoriamente
-        return enemyTypes[randomIndex];
-    }
 
     setupAnimations() {
  
@@ -395,6 +367,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
+
     if (!this.anims.exists('walkforward')) {
         this.anims.create({
             key: 'walkforward',
@@ -404,6 +377,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
+
     if (!this.anims.exists('walkleft')) {
         this.anims.create({
             key: 'walkleft',
@@ -412,6 +386,7 @@ export default class GameScene extends Phaser.Scene {
             repeat: -1
         });
     }
+
   
     if (!this.anims.exists('walkright')) {
         this.anims.create({
@@ -422,6 +397,7 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
+   
     if (!this.anims.exists('attackbackwards')) {
         this.anims.create({
             key: 'attackbackwards',
@@ -458,6 +434,54 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
+    if (!this.anims.exists('enemyWalkBackwards')) {
+        this.anims.create({
+            key: 'enemyWalkBackwards',
+            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        });
+    }
+
+    if (!this.anims.exists('enemyWalkForward')) {
+        this.anims.create({
+            key: 'enemyWalkForward',
+            frames: this.anims.generateFrameNumbers('player', { start: 48, end: 55 }),
+            frameRate: 10,
+            repeat: -1
+        });
+    }
+
+    if (!this.anims.exists('enemyWalkRight')) {
+        this.anims.create({
+            key: 'enemyWalkRight',
+            frames: this.anims.generateFrameNumbers('player', { start: 32, end: 39 }),
+            frameRate: 10,
+            repeat: -1
+        });
+    }
+
+ 
+    if (!this.anims.exists('enemyWalkLeft')) {
+        this.anims.create({
+            key: 'enemyWalkLeft',
+            frames: this.anims.generateFrameNumbers('player', { start: 16, end: 23 }),
+            frameRate: 10,
+            repeat: -1
+        });
+    }
+
+   
+    if (!this.anims.exists('enemyAttack')) {
+        this.anims.create({
+            key: 'enemyAttack',
+            frames: this.anims.generateFrameNumbers('player', { start: 37, end: 40 }),
+            frameRate: 10,
+            repeat: -1
+        });
+    }
+
+  
     if (!this.anims.exists('fireballAnim')) {
         this.anims.create({
             key: 'fireballAnim',
@@ -486,281 +510,51 @@ export default class GameScene extends Phaser.Scene {
     }
 }
 
-setupEnemyAnimation(enemySprite, enemyType) {
-    switch (enemyType) {
-        case 'zombie':
-            this.setupZombieAnimations();
-            break;
-        case 'troll':
-            this.setupTrollAnimations();
-            break;
-        case 'skeleton':
-            this.setupSkeletonAnimations();
-            break;
-        default:
-            return;
+    spawnEnemy() {
+        const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
+        const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
+        this.enemy = this.physics.add.sprite(randomX, randomY, 'player').setScale(2);
+        this.enemyHealth = 100;
+        this.enemyHealthBar = this.add.graphics();
+        this.updateEnemyHealthBar();
     }
-}
-
-setupZombieAnimations() {
-    if (!this.anims.exists('zombieWalkBackwards')) {
-        this.anims.create({
-            key: 'zombieWalkBackwards',
-            frames: this.anims.generateFrameNumbers('zombie', { start: 6, end: 7 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('zombieWalkForward')) {
-        this.anims.create({
-            key: 'zombieWalkForward',
-            frames: this.anims.generateFrameNumbers('zombie', { start: 10, end: 11 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('zombieWalkRight')) {
-        this.anims.create({
-            key: 'zombieWalkRight',
-            frames: this.anims.generateFrameNumbers('zombie', { start: 8, end: 9 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('zombieWalkLeft')) {
-        this.anims.create({
-            key: 'zombieWalkLeft',
-            frames: this.anims.generateFrameNumbers('zombie', { start: 8, end: 9 }),
-            frameRate: 10,
-            repeat: -1,
-            yoyo: true // Inverte a animação
-        });
-    }
-
-    if (!this.anims.exists('zombieAttack')) {
-        this.anims.create({
-            key: 'zombieAttack',
-            frames: this.anims.generateFrameNumbers('zombie', { start: 12, end: 13 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-}
-
-setupTrollAnimations() {
-    if (!this.anims.exists('trollWalkBackwards')) {
-        this.anims.create({
-            key: 'trollWalkBackwards',
-            frames: this.anims.generateFrameNumbers('troll', { start: 8, end: 9 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('trollWalkForward')) {
-        this.anims.create({
-            key: 'trollWalkForward',
-            frames: this.anims.generateFrameNumbers('troll', { start: 12, end: 13 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('trollWalkRight')) {
-        this.anims.create({
-            key: 'trollWalkRight',
-            frames: this.anims.generateFrameNumbers('troll', { start: 14, end: 15 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('trollWalkLeft')) {
-        this.anims.create({
-            key: 'trollWalkLeft',
-            frames: this.anims.generateFrameNumbers('troll', { start: 14, end: 15 }),
-            frameRate: 10,
-            repeat: -1,
-            yoyo: true // Inverte a animação
-        });
-    }
-
-    if (!this.anims.exists('trollAttack')) {
-        this.anims.create({
-            key: 'trollAttack',
-            frames: this.anims.generateFrameNumbers('troll', { start: 16, end: 17 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-}
-
-setupSkeletonAnimations() {
-    if (!this.anims.exists('skeletonWalkBackwards')) {
-        this.anims.create({
-            key: 'skeletonWalkBackwards',
-            frames: this.anims.generateFrameNumbers('skeleton', { start: 6, end: 7 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('skeletonWalkForward')) {
-        this.anims.create({
-            key: 'skeletonWalkForward',
-            frames: this.anims.generateFrameNumbers('skeleton', { start: 10, end: 11 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('skeletonWalkRight')) {
-        this.anims.create({
-            key: 'skeletonWalkRight',
-            frames: this.anims.generateFrameNumbers('skeleton', { start: 8, end: 9 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-
-    if (!this.anims.exists('skeletonWalkLeft')) {
-        this.anims.create({
-            key: 'skeletonWalkLeft',
-            frames: this.anims.generateFrameNumbers('skeleton', { start: 8, end: 9 }),
-            frameRate: 10,
-            repeat: -1,
-            yoyo: true // Inverte a animação
-        });
-    }
-
-    if (!this.anims.exists('skeletonAttack')) {
-        this.anims.create({
-            key: 'skeletonAttack',
-            frames: this.anims.generateFrameNumbers('skeleton', { start: 12, end: 13 }),
-            frameRate: 10,
-            repeat: -1
-        });
-    }
-}
-
-
-spawnEnemy(enemy) {
-    const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
-    const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
-
-    let enemyTexture = 'zombie';
-    let enemyHealth = 100;
-    let enemyAttackRange = 50;
-
-    // Verifica o tipo de inimigo e define as propriedades com base no parâmetro 'enemy'
-    switch (enemy.name) {
-        case 'zombie':
-            enemyTexture = 'zombie';
-            enemyHealth = 100;
-            enemyAttackRange = 50;
-            break;
-        case 'troll':
-            enemyTexture = 'troll';
-            enemyHealth = 150;
-            enemyAttackRange = 70;
-            break;
-        case 'skeleton':
-            enemyTexture = 'skeleton';
-            enemyHealth = 80;
-            enemyAttackRange = 40;
-            break;
-        default:
-            enemyTexture = 'zombie';
-            enemyHealth = 100;
-            enemyAttackRange = 50;
-            break;
-    }
-
-    const enemySprite = this.physics.add.sprite(randomX, randomY, enemyTexture).setScale(2);
-    enemySprite.enemyId = Phaser.Math.RND.uuid(); // Atribui um ID único para cada inimigo
-    enemySprite.health = enemyHealth; // Propriedade de vida do inimigo
-    enemySprite.attackRange = enemyAttackRange; // Propriedade de alcance de ataque do inimigo
-
-    // Configuração da animação do inimigo baseada no tipo
-    this.setupEnemyAnimation(enemySprite, enemy.name);
-
-    // Adiciona o inimigo ao array de inimigos
-    this.enemies.push(enemySprite);
-
-    // Atualiza a barra de vida do inimigo
-    this.updateEnemyHealthBar();
-}
 
     dealDamage() {
-        this.enemies.forEach(enemy => {
-            if (Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y) < enemy.attackRange) {
-                enemy.health -= this.playerAttack;
-                if (enemy.health <= 0) {
-                    enemy.destroy();
-                    this.enemies = this.enemies.filter(e => e.enemyId !== enemy.enemyId); // Remove o inimigo do array
-                    this.spawnEnemy(enemy);
-                    this.incrementKillCount();
-                    this.increaseLightRadius();
-                    if (this.playerHealth + 10 < this.playerMaxHealth) {
-                        this.playerHealth += this.healHeath;
-                    }
+        if (this.enemy && Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y) < this.enemyAttackRange) {
+            this.enemyHealth -= this.playerAttack;
+            if (this.enemyHealth <= 0) {
+                this.enemy.destroy();
+                this.enemyHealthBar.destroy();
+                this.spawnEnemy();
+                this.increaseLightRadius();
+                this.incrementKillCount();
+                if (this.playerHealth + 10 < this.playerMaxHealth) {
+                    this.playerHealth += this.healHeath;
                 }
-            }
-        });
-    }
-
-    updateEnemyHealthBar() {
-        this.enemies.forEach(enemy => {
-            if (enemy && enemy.healthBar) {
-                enemy.healthBar.clear();
-                enemy.healthBar.fillStyle(0xff0000, 1);
-                enemy.healthBar.fillRect(enemy.x - 32, enemy.y - 40, (enemy.health / 100) * 64, 10);
-                enemy.healthBar.setDepth(11);
-            }
-        });
-    }
-
-    updateEnemyAnimation(enemy) {
-        if (enemy && enemy.type) {
-            // Chama a função de configuração de animação apropriada para garantir que as animações estejam configuradas
-            this.setupEnemyAnimation(enemy, enemy.type);
-    
-            const animations = {
-                walkForward: `${enemy.type}WalkForward`,
-                walkBackwards: `${enemy.type}WalkBackwards`,
-                walkRight: `${enemy.type}WalkRight`,
-                walkLeft: `${enemy.type}WalkLeft`,
-                attack: `${enemy.type}Attack`
-            };
-    
-            // Obtém a velocidade do inimigo
-            const velocity = enemy.body.velocity;
-    
-            let animationKey;
-            if (velocity.x > 0) {
-                animationKey = animations.walkRight;
-            } else if (velocity.x < 0) {
-                animationKey = animations.walkLeft;
-            } else if (velocity.y > 0) {
-                animationKey = animations.walkForward;
-            } else if (velocity.y < 0) {
-                animationKey = animations.walkBackwards;
-            } else {
-                // Se o inimigo não está se movendo, não mudar a animação
-                return;
-            }
-    
-            // Verifica se a animação atual está sendo reproduzida
-            if (!enemy.anims.isPlaying || !enemy.anims.currentAnim || enemy.anims.currentAnim.key !== animationKey) {
-                console.log(`Playing ${animationKey} animation`);
-                enemy.anims.play(animationKey, true);
             }
         }
     }
-    
+
+    updateEnemyHealthBar() {
+        if (this.enemy && this.enemyHealthBar) {
+            this.enemyHealthBar.clear();
+            this.enemyHealthBar.fillStyle(0xff0000, 1);
+            this.enemyHealthBar.fillRect(this.enemy.x - 32, this.enemy.y - 40, (this.enemyHealth / 100) * 64, 10);
+            this.enemyHealthBar.setDepth(11);
+        }
+    }
+
+    updateEnemyAnimation() {
+        if (this.enemy.body.velocity.x > 0) {
+            this.enemy.anims.play('enemyWalkRight', true);
+        } else if (this.enemy.body.velocity.x < 0) {
+            this.enemy.anims.play('enemyWalkLeft', true);
+        } else if (this.enemy.body.velocity.y > 0) {
+            this.enemy.anims.play('enemyWalkForward', true);
+        } else if (this.enemy.body.velocity.y < 0) {
+            this.enemy.anims.play('enemyWalkBackwards', true);
+        }
+    }
 
     flashMap(layer) {
         if (!this.mapVisible) {
@@ -874,20 +668,36 @@ spawnEnemy(enemy) {
         });
     }
     
-    hitEnemy(attack, enemy) {
-        this.enemies.forEach(enemy => {
-            if (Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y) < enemy.attackRange) {
-                attack.destroy();
-                enemy.health -= 100;
-                if (enemy.health <= 0) {
-                    enemy.destroy();
-                    this.enemies = this.enemies.filter(e => e.enemyId !== enemy.enemyId); // Remove o inimigo do array
-                    this.incrementKillCount();
-                    this.increaseLightRadius();
-                }
-            }
-        });
+
+    
+    hitEnemy(atacck, enemy) {
+        atacck.destroy();
+        this.enemyHealth -= 100;
+        if (this.enemyHealth <= 0) {
+            this.enemy.destroy();
+            this.enemyHealthBar.destroy();
+            this.spawnEnemy();
+            this.incrementKillCount();
+            this.increaseLightRadius();
+        }
     }
+
+    hitEnemy2(atacck, enemy) {
+
+        if(!attack.anims.isPlaying){
+        atacck.destroy();
+        }
+
+        this.enemyHealth -= 100;
+        if (this.enemyHealth <= 0) {
+            this.enemy.destroy();
+            this.enemyHealthBar.destroy();
+            this.spawnEnemy();
+            this.incrementKillCount();
+            this.increaseLightRadius(); 
+        }
+    }
+
 
     updatePlayerHealthBar() {
         const healthPercentage = this.playerHealth / this.playerMaxHealth;
