@@ -361,6 +361,7 @@ export default class GameScene extends Phaser.Scene {
             this.darkBoltAttack1();
         }
         
+        // Dentro do método onde você itera sobre os inimigos (this.enemies.forEach)
         this.enemies.forEach(enemy => {
             if (!enemy.anims) {
                 return; // Evita processar inimigos sem animações definidas
@@ -393,7 +394,7 @@ export default class GameScene extends Phaser.Scene {
             if (enemy.healthBar) {
                 enemy.healthBar.setVisible(isEnemyVisible);
             }
-        });        
+        });
         
         this.updatePlayerHealthBar();
         this.updateEnemyHealthBar();
@@ -443,6 +444,8 @@ export default class GameScene extends Phaser.Scene {
             this.enemy.anims.stop();
         }
     }
+}
+
     
     getRandomEnemyType() {
         // Tipos de inimigos disponíveis
