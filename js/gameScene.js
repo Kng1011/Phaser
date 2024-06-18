@@ -55,11 +55,13 @@ export default class GameScene extends Phaser.Scene {
         this.lightFlash = null;
 
         this.enemies = [];
+        this.enemiesGroup = null;
+        this.enemyType = null;
         
-
         this.skillFrames = [];
         this.selectedSkills = [];
         this.selectedPowerUps = [];
+        
     }
 
     preload() {
@@ -145,16 +147,18 @@ export default class GameScene extends Phaser.Scene {
         ]
 
         const randomIndex = Math.floor(Math.random() * this.enemies.length);
-        const enemyType = this.enemies[randomIndex];
-        this.spawnEnemy(enemyType.key);
-        this.enemy.key = enemyType.key;
-        this.enemy.health = enemyType.health;
-        this.enemy.attack = enemyType.attack;
-        this.enemy.speed = enemyType.speed;
-        this.enemy.attackSpeed = enemyType.attackSpeed;
-        this.enemy.attackRange = enemyType.attackRange;
-        console.log(this.enemy.key);
-        this.setupEnemyAnimation(enemyType.key);
+        this.enemyType = this.enemies[randomIndex];
+
+        this.enemiesGroup = this.physics.add.group(
+            {
+                defaultKey: this.enemyType.key,
+                maxSize: 100
+            }
+        );
+
+        this.spawnEnemy(this.enemyType.key);
+
+       
     
         this.darkness = this.make.graphics();
         this.darkness.fillStyle(0x000000, 1);
@@ -405,9 +409,9 @@ export default class GameScene extends Phaser.Scene {
             if (distance < this.enemyAttackRange) {
                 this.enemy.setVelocity(0, 0);
 
-                if (this.enemy.anims.currentAnim.key !==  this.enemy.key + 'Attack') {
+                if (this.enemy.anims.currentAnim.key !=  this.enemy.key + 'Attack') {
                     this.time.addEvent({
-                        delay: 1500, 
+                        delay: this.enemy.attackSpeed, 
                         callback: () => {
                             this.enemy.anims.play( this.enemy.key + 'Attack', true);
                         },
@@ -728,14 +732,27 @@ export default class GameScene extends Phaser.Scene {
     }
 }
 
-    spawnEnemy(enemytype) {
-        const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
-        const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
-        this.enemy = this.physics.add.sprite(randomX, randomY, enemytype).setScale(2);
-        this.enemyHealth = 100;
-        this.enemyHealthBar = this.add.graphics();
-        this.updateEnemyHealthBar();
+spawnEnemy(enemyTypeKey) {
+    const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
+    const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
+    const newEnemy = this.enemiesGroup.get(randomX, randomY, enemyTypeKey);
+
+    if (!newEnemy) {
+        console.error('Falha ao gerar novo inimigo:', enemyTypeKey);
+        return; 
     }
+
+    this.enemy = newEnemy.setScale(2);
+    this.enemy.key = enemyTypeKey;
+    this.setupEnemyAnimation(this.enemy.key); 
+    this.enemy.health = this.enemyType.health; 
+    this.enemy.attack = this.enemyType.attack;
+    this.enemy.speed = this.enemyType.speed;
+    this.enemy.attackSpeed = this.enemyType.attackSpeed;
+    this.enemy.attackRange = this.enemyType.attackRange;
+    this.enemyHealthBar = this.add.graphics();
+    this.updateEnemyHealthBar();
+}
 
     dealDamage() {
         if (this.enemy && Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y) < this.enemyAttackRange) {
@@ -743,7 +760,7 @@ export default class GameScene extends Phaser.Scene {
             if (this.enemyHealth <= 0) {
                 this.enemy.destroy();
                 this.enemyHealthBar.destroy();
-                this.spawnEnemy();
+                this.spawnEnemy(this.enemy.key);
                 this.increaseLightRadius();
                 this.incrementKillCount();
                 if (this.playerHealth + 10 < this.playerMaxHealth) {
