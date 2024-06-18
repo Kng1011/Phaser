@@ -612,8 +612,17 @@ export default class GameScene extends Phaser.Scene {
 
     flashMap(layer) {
         if (!this.mapVisible) {
-            this.mapVisible = true;
-    
+            this.mapVisible = true; this.lightFlash.clear();
+
+
+            this.lightFlash.fillStyle(0xffffe0, 1);
+            this.lightFlash.setAlpha(1);
+            this.lightFlash.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
+
+            this.time.delayedCall(200, () => {
+                this.lightFlash.setAlpha(0);
+            }, [], this);
+
             const originalLightRadius = this.lightRadius;
             this.lightRadius = this.cameras.main.width; 
             this.updateLightMask();
