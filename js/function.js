@@ -11,16 +11,11 @@ export default class GameScene extends Phaser.Scene {
         this.fireballKey = null;
         this.darkAttackKey = null;
         this.mapFlashKey = null;
-        this.darkBoltAttackKey = null;
 
         this.enemies = [];
         this.enemyHealth = 100;
-
         this.enemyHealthBars = [];
         this.enemyAttackRange = 50;
-
-        this.enemyHealthBar = null;
-        this.enemyAttackRange = 25;
 
         this.selectedSkill = null;
         this.darkattacks = null;
@@ -31,10 +26,6 @@ export default class GameScene extends Phaser.Scene {
         this.canShootFireball = true;
         this.fireballCooldownTime = 2000; 
         this.fireballCooldownGraphic = null;
-        this.darkBoltAttack = null;
-        this.canDarkBoltAttack = true;
-        this.darkBoltAttackCooldownTime = 8000;
-        this.darkBoltAttackCooldownTimeGraphic = null;
         
         this.player = null;
         this.playerSpeed = 200;
@@ -70,7 +61,6 @@ export default class GameScene extends Phaser.Scene {
         this.load.spritesheet('player', 'assets/player.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('fireball', 'assets/fireball.png', { frameWidth: 64, frameHeight: 32 });
         this.load.spritesheet('DarkAttack1', 'assets/DarkVFX1.png', { frameWidth: 40, frameHeight: 32 });
-        this.load.spritesheet('boltdark', 'assets/DarkBolt.png', { frameWidth: 64, frameHeight: 88 });
         this.load.image('Frame', 'assets/Frame.png');
         this.load.image('lifebar1', 'assets/Lifebar1.png');
         this.load.image('lifebar2', 'assets/Lifebar2.png');
@@ -85,9 +75,6 @@ export default class GameScene extends Phaser.Scene {
         this.lightRadius = 100; 
         this.selectedSkills = data.selectedSkills || [];  
         this.selectedPowerUps = data.selectedPowerUps || [];
-        this.canShootFireball = true;
-        this.canDarkAttack = true;
-        this.canDarkBoltAttack = true;
         console.log(this.selectedSkills);
         console.log(this.selectedPowerUps);
     }
@@ -110,9 +97,6 @@ export default class GameScene extends Phaser.Scene {
                     break;
                 case 'flash':
                     this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
-                    break;
-                case 'darkBoltAttack':
-                    this.darkBoltAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
                     break;
             }
         });
@@ -156,11 +140,6 @@ export default class GameScene extends Phaser.Scene {
             maxSize: 100
         });
 
-        this.darkBoltAttacks = this.physics.add.group({
-            defaultKey: 'boltdark',
-            maxSize: 100
-        });
-
         this.fireballLightMask = this.make.graphics();
         this.fireballLightMask.fillStyle(0xffffff, 1);
         this.fireballLightMask.fillCircle(0, 0, this.fireballLightRadius);
@@ -180,8 +159,6 @@ export default class GameScene extends Phaser.Scene {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'DarkAttack1');
             } else if (skill === 'flash') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'flash');
-            } else if (skill === 'darkBoltAttack') {
-                this.addSkillFrame(baseX + index * frameOffset, baseY, 'darkBoltAttack');
             }
         });
     
@@ -242,7 +219,6 @@ export default class GameScene extends Phaser.Scene {
         } else if (powerUp === 'cooldownReduction') {
             this.fireballCooldownTime = 1000;
             this.darkAttacksCooldownTime = 2000;
-            this.darkBoltAttackCooldownTime = 4000;
         } else if (powerUp === 'healOnKill') {
             this.healHeath = 10;
         }
@@ -259,9 +235,6 @@ export default class GameScene extends Phaser.Scene {
             this.darkAttacksCooldownTimeGraphic = skillGraphic;
         } else if (skill === 'flash') {
             skillGraphic = this.add.text(x , y, 'Flash', { fontSize: '20px', color: '#ffffff' }).setOrigin(0.5);
-        } else if (skill === 'darkBoltAttack') {
-            skillGraphic = this.add.sprite(x - 10 , y - 12, 'boltdark', 3).setScale(0.9);
-            this.darkBoltAttackCooldownTimeGraphic = skillGraphic;
         }
         frame.setDepth(10);
         skillGraphic.setDepth(11);
@@ -355,10 +328,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.mapFlashKey && Phaser.Input.Keyboard.JustDown(this.mapFlashKey)) {
             this.flashMap(this.layer1);
         }
-
-        if (this.darkBoltAttackKey && Phaser.Input.Keyboard.JustDown(this.darkBoltAttackKey) && this.canDarkBoltAttack) {
-            this.darkBoltAttack1();
-        }
+    
         
         // Dentro do método onde você itera sobre os inimigos (this.enemies.forEach)
         this.enemies.forEach(enemy => {
@@ -387,31 +357,21 @@ export default class GameScene extends Phaser.Scene {
                 this.updateEnemyAnimation(enemy); // Passa o inimigo para a função de atualização de animação
             }
         
-                const isEnemyVisible = distance <= this.lightRadius;
-                enemy.setVisible(isEnemyVisible);
-                if (enemy.healthBar) {
-                    enemy.healthBar.setVisible(isEnemyVisible);
-                }
-            });
+            const isEnemyVisible = distance <= this.lightRadius;
+            enemy.setVisible(isEnemyVisible);
+            if (enemy.healthBar) {
+                enemy.healthBar.setVisible(isEnemyVisible);
+            }
+        });
         
+
+    
         this.updatePlayerHealthBar();
         this.updateEnemyHealthBar();
+
         this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
 
     }
-
-    updateEnemyAnimation(velocity) {
-    if (velocity.x > 0) {
-        this.enemy.anims.play('enemyWalkRight', true);
-    } else if (velocity.x < 0) {
-        this.enemy.anims.play('enemyWalkLeft', true);
-    } else if (velocity.y > 0) {
-        this.enemy.anims.play('enemyWalkForward', true);
-    } else if (velocity.y < 0) {
-        this.enemy.anims.play('enemyWalkBackwards', true);
-    }
-}
-
     
     getRandomEnemyType() {
         // Tipos de inimigos disponíveis
@@ -522,15 +482,6 @@ export default class GameScene extends Phaser.Scene {
             frames: this.anims.generateFrameNumbers('DarkAttack1', { start: 10, end: 15}),
             frameRate: 100,
             repeat: 1
-        });
-    }
-
-    if(!this.anims.exists('DarkBoltAttackAnim')){
-        this.anims.create({
-            key: 'DarkBoltAttackAnim',
-            frames: this.anims.generateFrameNumbers('boltdark', { start: 0, end: 10 }),
-            frameRate: 10,
-            repeat: 0
         });
     }
 }
@@ -813,38 +764,27 @@ spawnEnemy(enemy) {
 
     flashMap(layer) {
         if (!this.mapVisible) {
-            this.mapVisible = true; this.lightFlash.clear();
+            layer.clearMask();
+            this.mapVisible = true;
 
-
+            
+            this.lightFlash.clear();
             this.lightFlash.fillStyle(0xffffe0, 1);
             this.lightFlash.setAlpha(1);
             this.lightFlash.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
-
+            
+            
             this.time.delayedCall(200, () => {
                 this.lightFlash.setAlpha(0);
             }, [], this);
-
-            const originalLightRadius = this.lightRadius;
-            this.lightRadius = this.cameras.main.width; 
-            this.updateLightMask();
-    
+            
+            
             this.time.delayedCall(1000, () => {
-                this.lightRadius = originalLightRadius;
-                this.updateLightMask();
+                layer.setMask(this.darkness.createBitmapMask(this.lightMask));
                 this.mapVisible = false;
             }, [], this);
         }
     }
-    
-    updateLightMask() {
-        this.lightMask.clear();
-        this.lightMask.fillStyle(0xffffff, 1);
-        this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
-        const mask = this.darkness.createBitmapMask(this.lightMask);
-        this.layer1.setMask(mask);
-        this.player.setMask(mask);
-    }
-    
 
     shootFireball() {
     if (!this.canShootFireball) return;
@@ -933,46 +873,6 @@ spawnEnemy(enemy) {
             callbackScope: this
         });
     }
-
-    darkBoltAttack1() {
-        if (!this.canDarkBoltAttack) return;
-        this.canDarkBoltAttack = false;
-    
-        if (this.darkBoltAttackCooldownTimeGraphic)
-            this.darkBoltAttackCooldownTimeGraphic.setTint(0xff0000);
-    
-        const numBolts = 8; 
-        const radius = 100; 
-    
-        for (let i = 0; i < numBolts; i++) {
-           
-            const angle = Phaser.Math.FloatBetween(0, 2 * Math.PI);
-            
-            const posX = this.player.x + radius * Math.cos(angle);
-            const posY = this.player.y + radius * Math.sin(angle);
-    
-            const darkBoltAttack = this.darkBoltAttacks.create(posX, posY, 'boltdark').setScale(2);
-            darkBoltAttack.anims.play('DarkBoltAttackAnim');
-    
-            this.physics.add.collider(darkBoltAttack, this.enemy, (darkBoltAttack, enemy) => {
-                this.hitEnemy2(darkBoltAttack, enemy);
-            }, null, this);
-    
-            darkBoltAttack.on('animationcomplete', () => {
-                darkBoltAttack.destroy(); 
-            });
-        }
-    
-        this.time.addEvent({
-            delay: this.darkBoltAttackCooldownTime,
-            callback: () => {
-                this.canDarkBoltAttack = true;
-                if (this.darkBoltAttackCooldownTimeGraphic)
-                    this.darkBoltAttackCooldownTimeGraphic.clearTint();
-            },
-            callbackScope: this
-        });
-    }
     
     hitEnemy(attack, enemy) {
         this.enemies.forEach(enemy => {
@@ -988,19 +888,7 @@ spawnEnemy(enemy) {
             }
         });
     }
-    
-    hitEnemy(attack, enemy) {
-        attack.destroy();
-        this.enemyHealth -= 100;
-        if (this.enemyHealth <= 0) {
-            this.enemy.destroy();
-            this.enemyHealthBar.destroy();
-            this.spawnEnemy();
-            this.incrementKillCount();
-            this.increaseLightRadius();
-        }
-    }
-    
+
     updatePlayerHealthBar() {
         const healthPercentage = this.playerHealth / this.playerMaxHealth;
         const newWidth = this.playerHealthBarBg.displayWidth * healthPercentage;
