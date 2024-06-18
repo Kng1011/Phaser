@@ -1,4 +1,4 @@
-import GameScene from './function.js';
+import GameScene from './gameScene.js';
 import GameOverScene from './again.js';
 import MenuScene from './menu.js';
 import ControlsScene from './controls.js';
