@@ -98,6 +98,7 @@ export default class GameScene extends Phaser.Scene {
         this.layer1 = map.createLayer('Camada de Blocos 1', tileset);
 
         this.setupAnimations();
+        this.setupEnemyAnimation();
         this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
         this.selectedSkills.forEach(skill => {
