@@ -12,7 +12,7 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
 
     create() {
         this.add.text(400, 50, 'Select a Power-Up', {
-            fontSize: '32px',
+            font: '64px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
 
@@ -60,12 +60,12 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
         selectedPowerUps.forEach((powerUp, index) => {
             const yPos = 200 + index * 100;
             const powerUpButton = this.add.text(400, yPos, powerUp.name, {
-                fontSize: '32px',
+                font: '64px Chiller',
                 color: '#ffffff'
             }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectPowerUp(powerUp.powerUpKey));
 
             this.add.text(400, yPos + 40, powerUp.description, {
-                fontSize: '18px',
+                font: '36px Chiller',
                 color: '#aaaaaa'
             }).setOrigin(0.5);
         });
