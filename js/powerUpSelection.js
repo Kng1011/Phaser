@@ -71,7 +71,7 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
             const powerUpButton = this.add.text(400, yPos, powerUp.name, {
                 fontSize: '32px',
                 color: '#ffffff'
-            }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectPowerUp(powerUp.powerUpKey));
+            }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectPowerUp(powerUp));
 
             this.add.text(400, yPos + 40, powerUp.description, {
                 fontSize: '18px',

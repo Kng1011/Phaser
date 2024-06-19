@@ -67,6 +67,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.enemiesGroupOnField = null;
         this.maxKillsReached = false;
+        this.pauseKey = null;
         
     }
 
@@ -111,9 +112,11 @@ export default class GameScene extends Phaser.Scene {
 
         this.setupAnimations();
         this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+        this.pauseKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+
 
         this.selectedSkills.forEach(skill => {
-            switch (skill) {
+            switch (skill.skillKey) {
                 case 'fireball':
                     this.fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
                     break;
@@ -224,13 +227,13 @@ export default class GameScene extends Phaser.Scene {
         const baseY = 560;
         const frameOffset = 70;
         this.selectedSkills.forEach((skill, index) => {
-            if (skill === 'fireball') {
+            if (skill.skillKey === 'fireball') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'fireball');
-            } else if (skill === 'darkAttack') {
+            } else if (skill.skillKey === 'darkAttack') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'DarkAttack1');
-            } else if (skill === 'flash') {
+            } else if (skill.skillKey === 'flash') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'flash');
-            } else if (skill === 'darkBoltAttack') {
+            } else if (skill.skillKey === 'darkBoltAttack') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'darkBoltAttack');
             }
         });
@@ -259,7 +262,7 @@ export default class GameScene extends Phaser.Scene {
         this.lightFlash.setAlpha(0);
 
         this.selectedPowerUps.forEach(powerUp => {
-            this.applyPowerUp(powerUp);
+            this.applyPowerUp(powerUp.powerUpKey);
         });
 
         this.physics.world.createDebugGraphic();
@@ -375,6 +378,11 @@ export default class GameScene extends Phaser.Scene {
                     this.dealDamage(enemy);  
                 }
             });
+        }
+
+        if(Phaser.Input.Keyboard.JustDown(this.pauseKey)){
+            this.scene.pause();
+            this.scene.launch('PauseScene');
         }
     
         if (this.player.anims.currentAnim && this.player.anims.currentAnim.key.startsWith('attack') && this.player.anims.isPlaying) {
