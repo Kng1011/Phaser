@@ -61,7 +61,7 @@ export default class GameScene extends Phaser.Scene {
         this.skillFrames = [];
         this.selectedSkills = [];
         this.selectedPowerUps = [];
-        
+        this.level = 0;
     }
 
     preload() {
@@ -132,7 +132,7 @@ export default class GameScene extends Phaser.Scene {
                 key: 'troll',
                 health: 200,
                 attack: 20,
-                speed: 100,
+                speed: 70,
                 attackSpeed: 1500,
                 attackRange: 30
             },
@@ -140,8 +140,8 @@ export default class GameScene extends Phaser.Scene {
                 key: 'skeleton',
                 health: 50,
                 attack: 5,
-                speed: 150,
-                attackSpeed: 500,
+                speed: 90,
+                attackSpeed: 2000,
                 attackRange: 20
             }
         ]
@@ -402,44 +402,43 @@ export default class GameScene extends Phaser.Scene {
         }
     
         if (this.enemy) {
-            const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y);
-        
-            if (distance < this.enemyAttackRange) {
-                this.enemy.setVelocity(0, 0);
+        const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y);
 
-                if (this.enemy.anims.currentAnim.key !=  this.enemy.key + 'Attack') {
-                    this.time.addEvent({
-                        delay: this.enemy.attackSpeed, 
-                        callback: () => {
-                            this.enemy.anims.play( this.enemy.key + 'Attack', true);
-                        },
-                        callbackScope: this,
-                        loop: true 
-                    });
-                }
-        
-                if (!this.enemyAttackTimer || this.time.now > this.enemyAttackTimer) {
-                    if (this.playerHealth > 0) {
-                        this.playerHealth -= 5; 
-                    }
-                    this.enemyAttackTimer = this.time.now + 1000; 
+        if (distance < this.enemyAttackRange) {
+            this.enemy.setVelocity(0, 0);
+
+           
+            if (this.enemy.anims.currentAnim.key !== this.enemy.key + 'Attack') {
+                this.enemy.anims.play(this.enemy.key + 'Attack', true);
+                this.enemy.isAttacking = true;  
+            }
+
+            
+            if (this.enemy.isAttacking && this.enemy.anims.currentFrame.isLast) {
+                if (!this.enemy.hasAttacked) {
+                    this.applyDamageToPlayer();
+                    this.enemy.hasAttacked = true;  
                 }
             } else {
-               
-                this.physics.moveToObject(this.enemy, this.player, 100);
-                this.updateEnemyAnimation(this.enemy.body.velocity);
+                this.enemy.hasAttacked = false;
             }
-        
-            const isEnemyVisible = distance <= this.lightRadius;
-            this.enemy.setVisible(isEnemyVisible);
-            this.enemyHealthBar.setVisible(isEnemyVisible);
+        } else {
+            this.physics.moveToObject(this.enemy, this.player, this.enemy.speed);
+            this.updateEnemyAnimation(this.enemy.body.velocity);
         }
+    }
     
-        this.updatePlayerHealthBar();
         this.updateEnemyHealthBar();
         this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
 
-      
+    }
+
+
+    applyDamageToPlayer() {
+        if (this.playerHealth > 0) {
+            this.playerHealth -= this.enemy.attack;
+            this.updatePlayerHealthBar();
+        }
     }
 
     updateEnemyAnimation(velocity) {
@@ -560,7 +559,7 @@ export default class GameScene extends Phaser.Scene {
                 frames: this.anims.generateFrameNumbers('troll', { start: 14, end: 15 }),
                 frameRate: 10,
                 repeat: -1,
-                yoyo: true // Inverte a animação
+                yoyo: true 
             });
         }
     
@@ -608,7 +607,7 @@ export default class GameScene extends Phaser.Scene {
                 frames: this.anims.generateFrameNumbers('skeleton', { start: 8, end: 9 }),
                 frameRate: 10,
                 repeat: -1,
-                yoyo: true // Inverte a animação
+                yoyo: true 
             });
         }
     
@@ -752,6 +751,7 @@ spawnEnemy(enemyTypeKey) {
     this.setupEnemyAnimation(this.enemy.key); 
     this.enemy.health = this.enemyType.health; 
     this.enemy.speed = this.enemyType.speed;
+    this.enemy.attack = this.enemyType.attack;
     this.enemy.attackSpeed = this.enemyType.attackSpeed;
     this.enemy.attackRange = this.enemyType.attackRange;
     this.enemyHealthBar = this.add.graphics();
@@ -961,7 +961,7 @@ spawnEnemy(enemyTypeKey) {
         if (this.enemyHealth <= 0) {
             this.enemy.destroy();
             this.enemyHealthBar.destroy();
-            this.spawnEnemy();
+            this.spawnEnemy(this.enemyType.key);
             this.incrementKillCount();
             this.increaseLightRadius();
         }
@@ -977,7 +977,7 @@ spawnEnemy(enemyTypeKey) {
         if (this.enemyHealth <= 0) {
             this.enemy.destroy();
             this.enemyHealthBar.destroy();
-            this.spawnEnemy();
+            this.spawnEnemy(this.enemyType.key);
             this.incrementKillCount();
             this.increaseLightRadius(); 
         }
@@ -992,6 +992,7 @@ spawnEnemy(enemyTypeKey) {
         if(this.playerHealth <= 0){
             this.scene.start('GameOverScene');
         }
+        console.log(this.playerHealth);
     }
 
     increaseLightRadius() {
@@ -1029,13 +1030,14 @@ spawnEnemy(enemyTypeKey) {
         console.log("Limite máximo de kills atingido!");
     
         const randomScene = Math.random();
+        this.level += 1;
     
         if (randomScene < 0.5) {
            
-            this.scene.start('SkillSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
+            this.scene.start('SkillSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps, level: this.level});
         } else {
             
-            this.scene.start('PowerUpSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
+            this.scene.start('PowerUpSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps, level: this.level });
         }
     }
     

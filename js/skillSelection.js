@@ -3,11 +3,13 @@ export default class SkillSelectionScene extends Phaser.Scene {
         super({ key: 'SkillSelectionScene' });
         this.selectedSkills = [];
         this.selectedPowerUps = [];
+        this.level = 0;
     }
 
     init(data) {
         this.selectedSkills = data.selectedSkills || [];
         this.selectedPowerUps = data.selectedPowerUps || [];
+        this.level = data.level || 0;
     }
 
     create() {
@@ -15,6 +17,15 @@ export default class SkillSelectionScene extends Phaser.Scene {
             fontSize: '32px',
             color: '#ffffff'
         }).setOrigin(0.5);
+
+
+        if (this.level > 0) {
+            this.add.text(400, 100, 'Level Completed(' + this.level + ')' , {
+                fontSize: '20px',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+        }
+        
 
         const skills = [
             {

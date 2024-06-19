@@ -3,11 +3,13 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
         super({ key: 'PowerUpSelectionScene' });
         this.selectedSkills = [];
         this.selectedPowerUps = [];
+        this.level = 0;
     }
 
     init(data) {
         this.selectedSkills = data.selectedSkills || [];
         this.selectedPowerUps = data.selectedPowerUps || [];
+        this.level = data.level || 0;
     }
 
     create() {
@@ -16,6 +18,13 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
 
+        if (this.level > 0) {
+            this.add.text(400, 125, 'Level Completed(' + this.level + ')' , {
+                fontSize: '20px',
+                color: '#ffffff'
+            }).setOrigin(0.5);   
+        }
+        
         const powerUps = [
             {
                 name: 'Health Boost',
