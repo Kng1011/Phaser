@@ -43,9 +43,8 @@ export default class GameScene extends Phaser.Scene {
         this.healHeath = 0;
 
         this.lightRadius = 100; 
-        this.lightDecreaseRate = 3; 
+        this.lightDecreaseRate = 5; 
         this.maxLightRadius = 200; 
-        this.minLightRadius = 50;
         this.fireballLightMask = null;
         this.fireballLightRadius = 50;
         this.killCount = 0;
@@ -157,8 +156,7 @@ export default class GameScene extends Phaser.Scene {
             }
         );
 
-        this.spawnEnemy(this.enemyType.key);
-
+    
         this.darkness = this.make.graphics();
         this.darkness.fillStyle(0x000000, 1);
         this.darkness.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
@@ -173,8 +171,8 @@ export default class GameScene extends Phaser.Scene {
         this.mask2 = this.darkness.createBitmapMask(this.lightMask);
         this.layer1.setMask(mask);
         this.player.setMask(mask);
-        this.enemy.setMask(mask);
-        this.enemyHealthBar.setMask(mask);
+        
+        this.spawnEnemy(this.enemyType.key);
        
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = {
@@ -242,20 +240,6 @@ export default class GameScene extends Phaser.Scene {
             font: '20px Arial',
             fill: '#ffffff',
         }).setOrigin(1, 0);
-
-        this.timerValue = 60; 
-        this.timerText = this.add.text(760, 50, `Tempo: ${this.timerValue}`, {
-            font: '20px Arial',
-            fill: '#ffffff', 
-        }).setOrigin(1, 0); 
-
-    
-        this.time.addEvent({
-            delay: 1000,
-            callback: this.updateTimer,
-            callbackScope: this,
-            loop: true
-        }); 
 
         this.lightFlash = this.add.graphics();
         this.lightFlash.fillStyle(0xffffe0, 1);
@@ -336,7 +320,6 @@ export default class GameScene extends Phaser.Scene {
         this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
         this.player.setVelocity(0);
 
-        console.log(this.playerHealth);
 
         this.fireballs.children.each(function(fireball) {
             if (fireball.active) {
@@ -431,7 +414,7 @@ export default class GameScene extends Phaser.Scene {
             this.updateEnemyAnimation(this.enemy.body.velocity);
         }
     }
-    
+        this.TimeOver();
         this.updateEnemyHealthBar();
         this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
 
@@ -1014,15 +997,12 @@ spawnEnemy(enemyTypeKey) {
     }
 
     decreaseLightRadius() {
-        if (this.lightRadius > this.minLightRadius) {
-            this.lightRadius -= this.lightDecreaseRate;
-            if (this.lightRadius < this.minLightRadius) {
-                this.lightRadius = this.minLightRadius;
-            }
-            this.lightMask.clear();
-            this.lightMask.fillStyle(0xffffff, 1);
-            this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
-        }
+
+        this.lightRadius -= this.lightDecreaseRate;
+        this.lightMask.clear();
+        this.lightMask.fillStyle(0xffffff, 1);
+        this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
+        
     }
 
     incrementKillCount() {
@@ -1045,6 +1025,13 @@ spawnEnemy(enemyTypeKey) {
             
             this.scene.start('PowerUpSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps, level: this.level });
         }
+    }
+
+    TimeOver() {
+        if(this.lightRadius == 0){
+            this.scene.start('GameOverScene');
+        }
+        
     }
     
 }
