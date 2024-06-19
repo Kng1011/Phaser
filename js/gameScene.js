@@ -62,6 +62,7 @@ export default class GameScene extends Phaser.Scene {
         this.selectedSkills = [];
         this.selectedPowerUps = [];
         this.level = 0;
+        this.mask2 = null;
     }
 
     preload() {
@@ -169,9 +170,12 @@ export default class GameScene extends Phaser.Scene {
         this.lightMask.setBlendMode(Phaser.BlendModes.ERASE);
 
         const mask = this.darkness.createBitmapMask(this.lightMask);
+        this.mask2 = this.darkness.createBitmapMask(this.lightMask);
         this.layer1.setMask(mask);
         this.player.setMask(mask);
-
+        this.enemy.setMask(mask);
+        this.enemyHealthBar.setMask(mask);
+       
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = {
             up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
@@ -755,7 +759,9 @@ spawnEnemy(enemyTypeKey) {
     this.enemy.attackSpeed = this.enemyType.attackSpeed;
     this.enemy.attackRange = this.enemyType.attackRange;
     this.enemyHealthBar = this.add.graphics();
-
+    this.enemy.setMask(this.mask2);
+    this.enemyHealthBar.setMask(this.mask2);
+    
     console.log("enemy health: " + this.enemy.health);
 }
 
