@@ -20,21 +20,21 @@ export default class ControlsScene extends Phaser.Scene {
         const letras = this.add.sprite(150, 100, 'letras' ).setScale(1);
         const setas = this.add.sprite(650, 100, 'setas').setScale(1);
         const E = this.add.text(150, 210, 'E',{
-            font: '15px Arial',
+            font: '30px Arial',
             fill: '#ffffff'
-        }).setScale(2);
+        });
         const Q = this.add.text(190, 350, 'Q', {
-            font: '15px Arial',
+            font: '30px Arial',
             fill: '#ffffff'
-        }).setScale(2);
+        });
         const Z = this.add.text(90, 350, 'Z', {
-            font: '15px Arial',
+            font: '30px Arial',
             fill: '#ffffff'
-        }).setScale(2);
+        });
         const M = this.add.text(590, 350, 'M', {
-            font: '15px Arial',
+            font: '30px Arial',
             fill: '#ffffff'
-        }).setScale(2);
+        });
 
         // Calculando a posição do texto para ficar entre as duas imagens
         const textX = (letras.x + setas.x) / 2;

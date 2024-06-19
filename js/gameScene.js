@@ -88,6 +88,7 @@ export default class GameScene extends Phaser.Scene {
         this.canShootFireball = true;
         this.canDarkAttack = true;
         this.canDarkBoltAttack = true;
+        this.maxKills += this.level * 5;
         console.log(this.selectedSkills);
         console.log(this.selectedPowerUps);
     }
@@ -123,15 +124,15 @@ export default class GameScene extends Phaser.Scene {
             {
                 key: 'zombie',
                 health: 100,
-                attack: 10,
+                attack: 5,
                 speed: 50,
                 attackSpeed: 1000,
                 attackRange: 25
             },
             {
                 key: 'troll',
-                health: 200,
-                attack: 20,
+                health: 150,
+                attack: 7,
                 speed: 70,
                 attackSpeed: 1500,
                 attackRange: 30
@@ -139,7 +140,7 @@ export default class GameScene extends Phaser.Scene {
             {
                 key: 'skeleton',
                 health: 50,
-                attack: 5,
+                attack: 3,
                 speed: 90,
                 attackSpeed: 2000,
                 attackRange: 20
@@ -736,9 +737,9 @@ spawnEnemy(enemyTypeKey) {
     this.enemy = newEnemy.setScale(2);
     this.enemy.key = enemyTypeKey;
     this.setupEnemyAnimation(this.enemy.key); 
-    this.enemy.health = this.enemyType.health; 
-    this.enemy.speed = this.enemyType.speed;
-    this.enemy.attack = this.enemyType.attack;
+    this.enemy.health = this.enemyType.health * (1 + 0.05 * this.level); 
+    this.enemy.speed = this.enemyType.speed * (1 + 0.05 * this.level);
+    this.enemy.attack = this.enemyType.attack * (1 + 0.05 * this.level);
     this.enemy.attackSpeed = this.enemyType.attackSpeed;
     this.enemy.attackRange = this.enemyType.attackRange;
     this.enemyHealthBar = this.add.graphics();
@@ -1017,7 +1018,7 @@ spawnEnemy(enemyTypeKey) {
     
         const randomScene = Math.random();
         this.level += 1;
-    
+
         if (randomScene < 0.5) {
            
             this.scene.start('SkillSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps, level: this.level});
@@ -1030,6 +1031,7 @@ spawnEnemy(enemyTypeKey) {
     TimeOver() {
         if(this.lightRadius == 0){
             this.scene.start('GameOverScene');
+            this.level = 0;
         }
         
     }
