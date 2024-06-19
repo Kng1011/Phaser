@@ -443,17 +443,24 @@ export default class GameScene extends Phaser.Scene {
     }
 
     updateEnemyAnimation(velocity) {
-
-        if (this.direction === 'right') {
-            this.enemy.anims.play( this.enemy.key + 'WalkRight', true);
-        } else if (this.direction === 'left') {
-            this.enemy.anims.play( this.enemy.key + 'WalkLeft', true);
-        } else if (this.direction === 'forward') {
-            this.enemy.anims.play( this.enemy.key + 'WalkForward', true);
-        } else if (this.direction === 'backwards') {
-            this.enemy.anims.play( this.enemy.key + 'WalkBackwards', true);
+       
+        if (velocity.x > 0) {
+            this.enemy.anims.play(this.enemy.key + 'WalkRight', true);
+        } else if (velocity.x < 0) {
+            this.enemy.anims.play(this.enemy.key + 'WalkLeft', true);
+        }
+    
+        if (velocity.y > 0) {
+            this.enemy.anims.play(this.enemy.key + 'WalkBackwards', true);
+        } else if (velocity.y < 0) {
+            this.enemy.anims.play(this.enemy.key + 'WalkForward', true);
+        }
+    
+        if (velocity.x === 0 && velocity.y === 0) {
+            this.enemy.anims.stop(); 
         }
     }   
+      
 
     setupEnemyAnimation(enemyType) {
         switch (enemyType) {
