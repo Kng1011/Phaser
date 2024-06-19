@@ -158,8 +158,6 @@ export default class GameScene extends Phaser.Scene {
 
         this.spawnEnemy(this.enemyType.key);
 
-       
-    
         this.darkness = this.make.graphics();
         this.darkness.fillStyle(0x000000, 1);
         this.darkness.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
@@ -746,40 +744,43 @@ spawnEnemy(enemyTypeKey) {
     this.enemy.key = enemyTypeKey;
     this.setupEnemyAnimation(this.enemy.key); 
     this.enemy.health = this.enemyType.health; 
-    this.enemy.attack = this.enemyType.attack;
     this.enemy.speed = this.enemyType.speed;
     this.enemy.attackSpeed = this.enemyType.attackSpeed;
     this.enemy.attackRange = this.enemyType.attackRange;
     this.enemyHealthBar = this.add.graphics();
-    this.updateEnemyHealthBar();
+
+    console.log("enemy health: " + this.enemy.health);
 }
+
 
     dealDamage() {
         if (this.enemy && Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y) < this.enemyAttackRange) {
-            this.enemyHealth -= this.playerAttack;
-            if (this.enemyHealth <= 0) {
+            this.enemy.health -= this.playerAttack;
+            if (this.enemy.health <= 0) {
                 this.enemy.destroy();
                 this.enemyHealthBar.destroy();
-                this.spawnEnemy(this.enemy.key);
-                this.increaseLightRadius();
+                this.spawnEnemy(this.enemyType.key);
+                this.increaseLightRadius(); 
                 this.incrementKillCount();
                 if (this.playerHealth + 10 < this.playerMaxHealth) {
                     this.playerHealth += this.healHeath;
                 }
             }
         }
+        this.updateEnemyHealthBar();
     }
 
     updateEnemyHealthBar() {
         if (this.enemy && this.enemyHealthBar) {
             this.enemyHealthBar.clear();
             this.enemyHealthBar.fillStyle(0xff0000, 1);
-            this.enemyHealthBar.fillRect(this.enemy.x - 32, this.enemy.y - 40, (this.enemyHealth / 100) * 64, 10);
+            const healthPercent = this.enemy.health / this.enemyType.health;
+            const barWidth = 64 * healthPercent; // Ajuste para assegurar que a barra não desapareça completamente a menos que a saúde seja 0
+            this.enemyHealthBar.fillRect(this.enemy.x - 32, this.enemy.y - 40, barWidth, 10);
             this.enemyHealthBar.setDepth(11);
         }
     }
-
-
+    
     flashMap(layer) {
         if (!this.mapVisible) {
             this.mapVisible = true; this.lightFlash.clear();
@@ -821,7 +822,7 @@ spawnEnemy(enemyTypeKey) {
     this.fireballCooldownGraphic.setTint(0xff0000);
 
     const fireball = this.fireballs.get(this.player.x, this.player.y, 'fireball').setScale(2);
-    fireball.body.setSize(32, 32);
+    fireball.body.setSize(32,32);
     fireball.body.setOffset((fireball.width -32) / 2, (fireball.height- 32 ) / 2);
     
     fireball.anims.play('fireballAnim');
