@@ -1288,6 +1288,7 @@ spawnEnemy(enemyTypeKey) {
             this.scene.start('GameOverScene', { score: this.elapsedTime, highScore: this.highScore });
             this.selectedSkills = [];
             this.selectedPowerUps = [];
+            this.playerAttributes = {};
             this.level = 0;
             this.elapsedTime = 0
             this.numberOfEnemies = 0;

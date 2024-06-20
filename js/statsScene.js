@@ -39,10 +39,15 @@ export default class StatsScene extends Phaser.Scene{
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        this.add.text(150, 275, 'Health: ' + this.playerAttributes.playerHealth + '/' + this.playerAttributes.playerMaxHealth, {
-            font: '30px Chiller',
-            color: '#ffffff'
-        }).setOrigin(0.5);
+        this.add.text(
+            150, 
+            275, 
+            'Health: ' + Math.floor(this.playerAttributes.playerHealth) + '/' + Math.floor(this.playerAttributes.playerMaxHealth), 
+            {
+                font: '30px Chiller',
+                color: '#ffffff'
+            }
+        ).setOrigin(0.5);
 
         this.add.text(430, 50, 'Skills ', {
             font: '60px Chiller',
@@ -51,10 +56,13 @@ export default class StatsScene extends Phaser.Scene{
 
         this.playerAttributes.selectedSkills.forEach((skill, index) => {
             const baseX = 430;
-           
+            const baseY = 75; 
+            const textSpacing = 75; 
+            const skillBlockHeight = 150;
+        
             this.add.text(
                 baseX, 
-                75 + 75 * (index + 1), 
+                baseY + textSpacing * index, 
                 `${skill.name}s`, 
                 {
                     font: '30px Chiller',
@@ -64,17 +72,17 @@ export default class StatsScene extends Phaser.Scene{
         
             this.add.text(
                 baseX, 
-                100 + 50 * (index + 1), 
-                `Damage - ${skill.damage}`, 
+                baseY + textSpacing * index + 25, 
+                `Damage - ${Math.floor(skill.damage)}`, 
                 {
                     font: '20px Chiller',
                     color: '#ffffff'
                 }
             ).setOrigin(0.5);
-
+        
             this.add.text(
                 baseX, 
-                125 + 50 * (index + 1), 
+                baseY + textSpacing * index + 50, 
                 `Proficiency - ${skill.proficiency}%`, 
                 {
                     font: '20px Chiller',
@@ -82,6 +90,7 @@ export default class StatsScene extends Phaser.Scene{
                 }
             ).setOrigin(0.5);
         });
+        
         
         this.add.text(680, 50, 'PowerUps ', {
             font: '60px Chiller',
@@ -94,7 +103,7 @@ export default class StatsScene extends Phaser.Scene{
                 color: '#ffffff'
             }).setOrigin(0.5);
 
-            this.add.text(680, 100 + 50 * (index + 1), powerUp.number, {
+            this.add.text(680, 100 + 50 * (index + 1), 'N' + powerUp.number , {
                 font: '20px Chiller',
                 color: '#ffffff'
             }).setOrigin(0.5);
