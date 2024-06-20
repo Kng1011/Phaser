@@ -36,8 +36,13 @@ export default class GameOverScene extends Phaser.Scene {
     }
 
     restartGame() {
-        this.scene.start('GameScene');
-        console.log('restart');
+        const randomScene = Math.random();
+
+        if (randomScene < 0.5) {
+            this.scene.start('SkillSelectionScene');
+        } else {
+            this.scene.start('PowerUpSelectionScene');
+        }
     }
 
     leaveGame(){
