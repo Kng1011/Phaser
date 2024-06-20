@@ -20,19 +20,19 @@ export default class ControlsScene extends Phaser.Scene {
         const letras = this.add.sprite(150, 100, 'letras' ).setScale(1);
         const setas = this.add.sprite(650, 100, 'setas').setScale(1);
         const E = this.add.text(150, 210, 'E',{
-            font: '30px Arial',
+            font: '30px Chiller',
             fill: '#ffffff'
-        });
-        const Q = this.add.text(190, 350, 'Q', {
-            font: '30px Arial',
+        }).setScale(2);
+        const Q = this.add.text(190, 320, 'Q', {
+            font: '30px Chiller',
             fill: '#ffffff'
-        });
-        const Z = this.add.text(90, 350, 'Z', {
-            font: '30px Arial',
+        }).setScale(2);
+        const Z = this.add.text(90, 320, 'Z', {
+            font: '30px Chiller',
             fill: '#ffffff'
-        });
-        const M = this.add.text(590, 350, 'M', {
-            font: '30px Arial',
+        }).setScale(2);
+        const M = this.add.text(590, 320, 'M', {
+            font: '30px Chiller',
             fill: '#ffffff'
         });
 
@@ -42,18 +42,18 @@ export default class ControlsScene extends Phaser.Scene {
 
         // Adicionando textos
         const text = this.add.text(textX, textY, 'Movement', {
-            font: '32px Arial',
+            font: '64px Chiller',
             fill: '#ffffff'
         }).setOrigin(0.5);
 
-        const text2 = this.add.text(textX, textY + 125, 'Basic Attack',
-            {font: '32px Arial',
+        const text2 = this.add.text(textX, textY + 140, 'Basic Attack',
+            {font: '64px Chiller',
              fill: '#ffffff'
             }
         ).setOrigin(0.5);
 
         const text3 = this.add.text(textX, textY + 250, 'Skills',
-            {font: '32px Arial',
+            {font: '64px Chiller',
              fill: '#fff'
             }
         ).setOrigin(0.5);
@@ -81,7 +81,7 @@ export default class ControlsScene extends Phaser.Scene {
 
         // Adicionando o botão de voltar
         const backButton = this.add.text(400, 520, 'Back', {
-            font: '32px Arial',
+            font: '64px Chiller',
             fill: '#fff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.backMenu());
 

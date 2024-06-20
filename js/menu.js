@@ -4,36 +4,34 @@ export default class MenuScene extends Phaser.Scene {
     }
 
     preload() {
-        // pass
+        //pass
     }
 
     create() {
         this.add.text(400, 200, 'In the Darkness', {
-            font: '48px Arial',
+            font: '96px Chiller',
             fill: '#fff'
         }).setOrigin(0.5);
 
-        const startButton = this.add.text(400, 300, 'Start Game', {
-            font: '32px Arial',
+        const startButton = this.add.text(400, 325, 'Start Game', {
+            font: '64px Chiller',
             fill: '#fff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.startSelection());
 
-        const controlsButton = this.add.text(400, 400, 'Controls', {
-            font: '32px Arial',
+        const controlsButton = this.add.text(400, 425, 'Controls', {
+            font: '64px Chiller',
             fill: '#fff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.controls());
     }
 
     startSelection() {
-
         const randomScene = Math.random();
 
         if (randomScene < 0.5) {
             this.scene.start('SkillSelectionScene');
-        } else {    
+        } else {
             this.scene.start('PowerUpSelectionScene');
         }
-
     }
 
     controls() {

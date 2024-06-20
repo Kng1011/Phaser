@@ -183,7 +183,6 @@ export default class GameScene extends Phaser.Scene {
 
         this.enemiesGroupOnField = this.add.group();
 
-    
         this.darkness = this.make.graphics();
         this.darkness.fillStyle(0x000000, 1);
         this.darkness.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
@@ -263,9 +262,23 @@ export default class GameScene extends Phaser.Scene {
         });
 
         this.killCountText = this.add.text(760, 10, `Kills: ${this.killCount} / ${this.maxKills}`, {
-            font: '20px Arial',
+            font: '40px Chiller',
             fill: '#ffffff',
         }).setOrigin(1, 0);
+
+        this.timerValue = 60; 
+        this.timerText = this.add.text(760, 60, `Tempo: ${this.timerValue}`, {
+            font: '40px Chiller',
+            fill: '#ffffff', 
+        }).setOrigin(1, 0); 
+
+    
+        this.time.addEvent({
+            delay: 1000,
+            callback: this.updateTimer,
+            callbackScope: this,
+            loop: true
+        }); 
 
         this.lightFlash = this.add.graphics();
         this.lightFlash.fillStyle(0xffffe0, 1);

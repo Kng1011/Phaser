@@ -14,7 +14,7 @@ export default class SkillSelectionScene extends Phaser.Scene {
 
     create() {
         this.add.text(400, 50, 'Select a Skill', {
-            fontSize: '32px',
+            font: '64px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
 
@@ -62,18 +62,18 @@ export default class SkillSelectionScene extends Phaser.Scene {
         
         selectedSkills.forEach((skill, index) => {
             const yPos = 200 + index * 100;
-            const skillButton = this.add.text(400, yPos, skill.name, {
-                fontSize: '32px',
+            const skillButton = this.add.text(400, yPos - 5, skill.name, {
+                font: '50px Chiller',
                 color: '#ffffff'
             }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectSkill(skill));
 
-            this.add.text(400, yPos + 40, skill.description, {
-                fontSize: '18px',
+            this.add.text(400, yPos + 30, skill.description, {
+                font: '26px Chiller',
                 color: '#aaaaaa'
             }).setOrigin(0.5);
 
-            this.add.text(400, yPos + 60, skill.cooldown, {
-                fontSize: '18px',
+            this.add.text(400, yPos + 55, skill.cooldown, {
+                font: '26px Chiller',
                 color: '#aaaaaa'
             }).setOrigin(0.5);
         });
