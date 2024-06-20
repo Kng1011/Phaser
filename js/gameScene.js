@@ -354,7 +354,7 @@ export default class GameScene extends Phaser.Scene {
 
             if (number > 0){
                 this.fireballCooldownTime = this.fireballCooldownTime - (50 * number);
-                this.darkAttacksCooldownTime = thiis.darkAttacksCooldownTime - (50 * number);
+                this.darkAttacksCooldownTime = this.darkAttacksCooldownTime - (50 * number);
                 this.darkBoltAttackCooldownTime = this.darkBoltAttackCooldownTime - (50 * number);
             }
 
