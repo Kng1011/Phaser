@@ -197,6 +197,10 @@ export default class GameScene extends Phaser.Scene {
         const randomIndex = Math.floor(Math.random() * filteredEnemies.length);
         this.enemyType = filteredEnemies[randomIndex];
 
+        if (this.level % 5 === 0 && this.enemiesOnField === 0 && this.level !== 0) {
+            this.enemyType = 'boss';
+        }
+
         this.enemiesGroup = this.physics.add.group({
             defaultKey: this.enemyType.key,
             maxSize: 100
@@ -930,10 +934,7 @@ export default class GameScene extends Phaser.Scene {
 }
 
 spawnEnemy(enemyTypeKey) {
-    if (this.level % 5 === 0 && this.enemiesOnField === 0 && this.level !== 0) {
-        enemyTypeKey = 'boss';
-    }
-
+   
     const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
     const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
     const newEnemy = this.enemiesGroup.get(randomX, randomY, enemyTypeKey, false, true); 
@@ -959,6 +960,7 @@ spawnEnemy(enemyTypeKey) {
     this.setupEnemyAnimation(newEnemy.key);
     this.enemiesGroupOnField.add(newEnemy);
     this.enemiesOnField++;
+    console.log(newEnemy.health);
 }
 
     activateEnemies() {
