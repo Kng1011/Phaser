@@ -82,6 +82,8 @@ export default class GameScene extends Phaser.Scene {
             selectedPowerUps: []
         };
         
+        this.elapsedTime = 0;
+        this.highScore = 0;
     }
 
     preload() {
@@ -114,6 +116,7 @@ export default class GameScene extends Phaser.Scene {
         this.numberOfEnemies += 1;
         this.enemiesOnField = 0;
         this.maxKillsReached = false;
+        this.highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0 ;
 
         console.log("Numero de inimigos:" + this.numberOfEnemies);
     }
@@ -286,6 +289,16 @@ export default class GameScene extends Phaser.Scene {
             fireball.body.setCircle(15);  
         });
     
+        this.time.addEvent({
+            delay: 1000,
+            callback: this.updateElapsedTime,
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    updateElapsedTime() {
+        this.elapsedTime++;
     }
 
     updatePlayerAtributes() {
@@ -364,13 +377,6 @@ export default class GameScene extends Phaser.Scene {
         frame.setDepth(10);
         skillGraphic.setDepth(11);
         this.skillFrames.push({ frame, skillGraphic });
-    }
-
-    updateTimer() {
-        if (this.timerValue > 0) {
-            this.timerValue--;
-            this.timerText.setText(`Tempo: ${this.formatTime(this.timerValue)}`);
-        } 
     }
 
     formatTime(seconds) {
@@ -1134,8 +1140,16 @@ export default class GameScene extends Phaser.Scene {
         this.playerHealthBar.displayWidth = newWidth;
 
         if(this.playerHealth <= 0){
-            this.scene.start('GameOverScene');
+            if (this.elapsedTime > this.highScore) {
+                this.highScore = this.elapsedTime;
+                console.log(this.highScore);
+                localStorage.setItem('highScore', this.highScore); // Salva o novo high score no localStorage
+            }
+    
+            this.scene.start('GameOverScene', { score: this.elapsedTime, highScore: this.highScore });
             this.level = 0;
+            this.elapsedTime = 0
+            this.numberOfEnemies = 0;
         }
         console.log(this.playerHealth);
     }
@@ -1189,7 +1203,12 @@ export default class GameScene extends Phaser.Scene {
 
     TimeOver() {
         if(this.lightRadius == 0){
-            this.scene.start('GameOverScene');
+            if (this.elapsedTime > this.highScore) {
+                this.highScore = this.elapsedTime;
+                localStorage.setItem('highScore', this.highScore); // Salva o novo high score no localStorage
+            }
+    
+            this.scene.start('GameOverScene', { score: this.elapsedTime, highScore: this.highScore });
             this.level = 0;
         }
         
