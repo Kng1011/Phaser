@@ -540,6 +540,7 @@ export default class GameScene extends Phaser.Scene {
         this.TimeOver();
         if(this.level % 5 === 0 && this.level !== 0){
             this.killCountText.setText(`Kills: ${this.killCount} /1`);
+            this.lightRadius = 200;
         } else {
             this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
         }
