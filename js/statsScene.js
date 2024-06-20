@@ -91,7 +91,12 @@ export default class StatsScene extends Phaser.Scene{
 
         this.playerAttributes.selectedPowerUps.forEach((powerUp, index) => {
             this.add.text(680, 75 + 50 * (index + 1), powerUp.name, {
-                font: '30px Chiller',
+                font: '20px Chiller',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+
+            this.add.text(680, 100 + 50 * (index + 1), powerUp.number, {
+                font: '20px Chiller',
                 color: '#ffffff'
             }).setOrigin(0.5);
         });

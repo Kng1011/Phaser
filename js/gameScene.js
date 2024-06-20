@@ -302,18 +302,47 @@ export default class GameScene extends Phaser.Scene {
         if (powerUp === 'health') {
             this.playerMaxHealth = 150;
             this.playerHealth = 150;    
+            
+            if (powerUp.number > 0){
+                this.playerHealth = this.playerHealth + (20 * powerUp.number);
+            }
         } else if (powerUp === 'attack') {  
             this.playerAttack = 55;
+
+            if (powerUp.number > 0){
+                this.playerAttack = this.playerAttack + (3 * powerUp.number);
+            }
+
         } else if (powerUp === 'speed') {
-            this.playerSpeed = 300; 
+            this.playerSpeed = 300;
+
+            if (powerUp.number > 0){
+                this.playerSpeed = this.playerSpeed + (5 * powerUp.number);
+            }
         } else if (powerUp === 'attackSpeed') {
             this.playerAttackSpeed = 20;
+
+            if (powerUp.number > 0){
+                this.playerAttackSpeed = this.playerAttackSpeed + (2 * powerUp.number);
+            }
         } else if (powerUp === 'cooldownReduction') {
             this.fireballCooldownTime = 1000;
             this.darkAttacksCooldownTime = 2000;
             this.darkBoltAttackCooldownTime = 4000;
+
+            if (powerUp.number > 0){
+                this.fireballCooldownTime = this.fireballCooldownTime - (50 * powerUp.number);
+                this.darkAttacksCooldownTime = thiis.darkAttacksCooldownTime - (50 * powerUp.number);
+                this.darkBoltAttackCooldownTime = this.darkBoltAttackCooldownTime - (50 * powerUp.number);
+            }
+
         } else if (powerUp === 'healOnKill') {
             this.healHeath = 10;
+
+            if (powerUp.number > 0){
+                this.healHeath = this.healHeath + (2 * powerUp.number);
+            }
+
         }
     }
 
@@ -815,6 +844,7 @@ export default class GameScene extends Phaser.Scene {
                 if (enemy.healthBar) {
                     enemy.healthBar.destroy();
                 }
+                this.dropPowerUp(enemy);
                 enemy.destroy();
                 this.enemiesOnField--;
                 this.spawnEnemy(this.enemyType.key);
@@ -825,6 +855,23 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
             this.updateEnemyHealthBar(enemy);
+        }
+    }
+
+    dropPowerUp(enemy) {
+        const random = Math.random();
+        if (random < 0.1) {
+            const powerUps = ['health', 'attack', 'speed', 'attackSpeed', 'cooldownReduction', 'healOnKill'];
+            const randomPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+      
+            this.selectedPowerUps.forEach(powerUp => {
+                if (powerUp.powerUpKey === randomPowerUp) {
+                    powerUp.number++;
+                    this.applyPowerUp(powerUp.powerUpKey);
+                }
+
+            });
+           
         }
     }
 
@@ -888,7 +935,7 @@ export default class GameScene extends Phaser.Scene {
         this.selectedSkills.forEach(skill => {
             if (skill.skillKey === 'fireball' && skill.proficiency <=100) {
                 skill.proficiency++;
-                skill.damage  *= 1 + skill.proficiency/100 ;
+                skill.damage = 100 * (1 + skill.proficiency/100) ;
                 this.fireballDamage = skill.damage;
             }
         });
@@ -943,7 +990,7 @@ export default class GameScene extends Phaser.Scene {
         this.selectedSkills.forEach(skill => {
             if (skill.skillKey === 'darkAttack' && skill.proficiency <=100) {
                 skill.proficiency++;
-                skill.damage  *= 1 + skill.proficiency/100 ;
+                skill.damage = 120 * (1 + skill.proficiency/100) ;
                 this.darkAttackDamage = skill.damage;
             }
         });
@@ -997,7 +1044,7 @@ export default class GameScene extends Phaser.Scene {
         this.selectedSkills.forEach(skill => {
             if (skill.skillKey === 'darkBoltAttack' && skill.proficiency <=100) {
                 skill.proficiency++;
-                skill.damage  *= 1 + skill.proficiency/100 ;
+                skill.damage = 150 * (1 + skill.proficiency/100) ;
                 this.darkBoltAttackDamage = skill.damage;
             }
         });
@@ -1052,6 +1099,7 @@ export default class GameScene extends Phaser.Scene {
         if (enemy.healthBar) {
             enemy.healthBar.destroy();
         }
+        this.dropPowerUp(enemy);
         enemy.destroy(); 
         this.enemiesOnField--;
         this.spawnEnemy(this.enemyType.key);

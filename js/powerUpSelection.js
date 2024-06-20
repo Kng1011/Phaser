@@ -29,32 +29,38 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
             {
                 name: 'Health Boost',
                 description: 'Increases your health.',
-                powerUpKey: 'health'
+                powerUpKey: 'health',
+                number: 0
             },
             {
                 name: 'Attack Boost',
                 description: 'Increases your attack power.',
-                powerUpKey: 'attack'
+                powerUpKey: 'attack',
+                number: 0
             },
             {
                 name: 'Speed Boost',
                 description: 'Increases your movement speed.',
-                powerUpKey: 'speed'
+                powerUpKey: 'speed',
+                number: 0
             },
             {
                 name: 'Attack Speed Boost',
                 description: 'Increases your attack speed.',
-                powerUpKey: 'attackSpeed'
+                powerUpKey: 'attackSpeed',
+                number: 0
             },
             {
                 name: 'Cooldown Reduction',
                 description: 'Reduces your ability cooldowns.',
-                powerUpKey: 'cooldownReduction'
+                powerUpKey: 'cooldownReduction',
+                number: 0
             },
             {
                 name: 'Regeneration',
                 description: 'Heals every time you kill an enemy.',
-                powerUpKey: 'healOnKill'
+                powerUpKey: 'healOnKill',
+                number: 0
             }
         ];
 
