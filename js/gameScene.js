@@ -115,7 +115,7 @@ export default class GameScene extends Phaser.Scene {
         this.maxKills += this.level * 5;
         console.log(this.selectedSkills);
         console.log(this.selectedPowerUps);
-        this.numberOfEnemies = (this.level % 5 === 0) ? 1 : this.numberOfEnemies + 1;
+        this.numberOfEnemies = (this.level % 5 === 0) ? 1 : this.level + 1;
         this.enemiesOnField = 0;
         this.maxKillsReached = false;
         this.highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0 ;
@@ -1166,11 +1166,11 @@ spawnEnemy(enemyTypeKey) {
     
         const numBolts = 8;
         const radius = 100;
-
+    
         this.selectedSkills.forEach(skill => {
-            if (skill.skillKey === 'darkBoltAttack' && skill.proficiency <=100) {
+            if (skill.skillKey === 'darkBoltAttack' && skill.proficiency <= 100) {
                 skill.proficiency++;
-                skill.damage = 150 * (1 + skill.proficiency/100) ;
+                skill.damage = 150 * (1 + skill.proficiency / 100);
                 this.darkBoltAttackDamage = skill.damage;
             }
         });
@@ -1184,7 +1184,7 @@ spawnEnemy(enemyTypeKey) {
             darkBoltAttack.anims.play('DarkBoltAttackAnim');
     
             this.physics.add.collider(darkBoltAttack, this.enemiesGroupOnField, (darkBoltAttack, enemy) => {
-                this.hitEnemy2(darkBoltAttack, enemy);
+                this.hitEnemyWithDarkBolt(darkBoltAttack, enemy);
             }, null, this);
     
             darkBoltAttack.on('animationcomplete', () => {
@@ -1201,6 +1201,19 @@ spawnEnemy(enemyTypeKey) {
             },
             callbackScope: this
         });
+    }
+
+    hitEnemyWithDarkBolt(attack, enemy) {
+        if (attack && !attack.anims.isPlaying) {
+            attack.destroy();
+        }
+        if (enemy && enemy.active) {
+            enemy.health -= this.darkBoltAttackDamage;
+            this.updateEnemyHealthBar(enemy);
+            if (enemy.health <= 0) {
+                this.destroyEnemy(enemy);
+            }
+        }
     }
     
     
