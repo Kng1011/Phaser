@@ -115,7 +115,7 @@ export default class GameScene extends Phaser.Scene {
         this.maxKills += this.level * 5;
         console.log(this.selectedSkills);
         console.log(this.selectedPowerUps);
-        this.numberOfEnemies += 1;
+        this.numberOfEnemies = (this.level % 5 === 0) ? 1 : this.numberOfEnemies + 1;
         this.enemiesOnField = 0;
         this.maxKillsReached = false;
         this.highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0 ;
@@ -157,7 +157,7 @@ export default class GameScene extends Phaser.Scene {
                 key: 'zombie',
                 health: 100,
                 attack: 5,
-                speed: 50,
+                speed: 70,
                 attackSpeed: 1000,
                 attackRange: 25
             },
@@ -179,7 +179,7 @@ export default class GameScene extends Phaser.Scene {
             },
             {
                 key: 'boss',
-                health: 1000,
+                health: 10000,
                 attack: 12,
                 speed: 100,
                 attackSpeed: 3000,
@@ -187,16 +187,16 @@ export default class GameScene extends Phaser.Scene {
             }
         ]
 
-        const randomIndex = Math.floor(Math.random() * this.enemies.length);
-        this.enemyType = this.enemies[randomIndex];
+       
+        const filteredEnemies = this.enemies.filter(enemy => enemy.key !== 'boss');
 
-        this.enemiesGroup = this.physics.add.group(
-            {
-                defaultKey: this.enemyType.key,
-                maxSize: 100
-            }
-        );
+        const randomIndex = Math.floor(Math.random() * filteredEnemies.length);
+        this.enemyType = filteredEnemies[randomIndex];
 
+        this.enemiesGroup = this.physics.add.group({
+            defaultKey: this.enemyType.key,
+            maxSize: 100
+        });
         this.enemiesGroupOnField = this.add.group();
 
         this.darkness = this.make.graphics();
@@ -534,7 +534,12 @@ export default class GameScene extends Phaser.Scene {
         
         this.updatePlayerAtributes();
         this.TimeOver();
-        this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
+        if(this.level % 5 === 0 && this.level !== 0){
+            this.killCountText.setText(`Kills: ${this.killCount} /1`);
+        } else {
+            this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
+        }
+    
     }
     
     
@@ -919,33 +924,37 @@ export default class GameScene extends Phaser.Scene {
     }
 }
 
-    spawnEnemy(enemyTypeKey) {
-        const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
-        const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
-        const newEnemy = this.enemiesGroup.get(randomX, randomY, enemyTypeKey, false, true); 
-
-        if (!newEnemy) {
-            console.error('Falha ao gerar novo inimigo:', enemyTypeKey);
-            return;
-        }
-        
-        newEnemy.setScale(2);
-        newEnemy.setPosition(randomX, randomY);
-        newEnemy.health = this.enemyType.health * (1 + 0.05 * this.level);
-        newEnemy.speed = this.enemyType.speed * (1 + 0.05 * this.level);
-        newEnemy.attack = this.enemyType.attack * (1 + 0.05 * this.level);
-        newEnemy.attackSpeed = this.enemyType.attackSpeed;
-        newEnemy.attackRange = this.enemyType.attackRange;
-        newEnemy.key = enemyTypeKey;
-        newEnemy.healthBar = this.add.graphics();
-        newEnemy.setMask(this.mask2);
-        newEnemy.healthBar.setMask(this.mask2);
-        newEnemy.setActive(true).setVisible(true);
-
-        this.setupEnemyAnimation(newEnemy.key);
-        this.enemiesGroupOnField.add(newEnemy);
-        this.enemiesOnField++;
+spawnEnemy(enemyTypeKey) {
+    if (this.level % 5 === 0 && this.enemiesOnField === 0 && this.level !== 0) {
+        enemyTypeKey = 'boss';
     }
+
+    const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
+    const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
+    const newEnemy = this.enemiesGroup.get(randomX, randomY, enemyTypeKey, false, true); 
+
+    if (!newEnemy) {
+        console.error('Falha ao gerar novo inimigo:', enemyTypeKey);
+        return;
+    }
+    
+    newEnemy.setScale(2);
+    newEnemy.setPosition(randomX, randomY);
+    newEnemy.health = this.enemyType.health * (1 + 0.05 * this.level);
+    newEnemy.speed = this.enemyType.speed * (1 + 0.05 * this.level);
+    newEnemy.attack = this.enemyType.attack * (1 + 0.05 * this.level);
+    newEnemy.attackSpeed = this.enemyType.attackSpeed;
+    newEnemy.attackRange = this.enemyType.attackRange;
+    newEnemy.key = enemyTypeKey;
+    newEnemy.healthBar = this.add.graphics();
+    newEnemy.setMask(this.mask2);
+    newEnemy.healthBar.setMask(this.mask2);
+    newEnemy.setActive(true).setVisible(true);
+
+    this.setupEnemyAnimation(newEnemy.key);
+    this.enemiesGroupOnField.add(newEnemy);
+    this.enemiesOnField++;
+}
 
     activateEnemies() {
         this.enemiesGroupOnField.children.iterate(function (enemy) {
@@ -1208,6 +1217,9 @@ export default class GameScene extends Phaser.Scene {
             this.updateEnemyHealthBar(enemy); 
             if (enemy.health <= 0) {
                 this.destroyEnemy(enemy);
+                if (this.playerHealth + 10 < this.playerMaxHealth) {
+                    this.playerHealth += this.healHeath;
+                }
             }
         }
     }
@@ -1239,6 +1251,9 @@ export default class GameScene extends Phaser.Scene {
                 this.spawnEnemy(this.enemyType.key);
                 this.incrementKillCount();
                 this.increaseLightRadius();
+                if (this.playerHealth + 10 < this.playerMaxHealth) {
+                    this.playerHealth += this.healHeath;
+                }
             }
         }
     }
@@ -1269,7 +1284,7 @@ export default class GameScene extends Phaser.Scene {
 
     increaseLightRadius() {
         if (this.lightRadius < this.maxLightRadius) {
-            this.lightRadius += 20; 
+            this.lightRadius += 30; 
             if (this.lightRadius > this.maxLightRadius) {
                 this.lightRadius = this.maxLightRadius;
             }
@@ -1291,6 +1306,10 @@ export default class GameScene extends Phaser.Scene {
     incrementKillCount() {
         this.killCount += 1;
         if (this.killCount >= this.maxKills && !this.maxKillsReached) {
+            this.handleMaxKillsReached();
+        }
+    
+        if (this.level % 5 === 0 && this.killCount === 1 && this.level !== 0) {
             this.handleMaxKillsReached();
         }
     }

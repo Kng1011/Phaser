@@ -72,7 +72,7 @@ export default class SkillSelectionScene extends Phaser.Scene {
 
         selectedSkills.forEach((skill, index) => {
             const yPos = 200 + index * 100;
-            const skillButton = this.add.text(400, yPos - 5, skill.name, {
+            const skillButton = this.add.text(400, yPos, skill.name, {
                 font: '50px Chiller',
                 color: '#ffffff'
             }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectSkill(skill));

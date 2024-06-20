@@ -65,7 +65,7 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
         ];
 
 
-        const availablePowerUps = powerUps.filter(powerUp => !this.selectedPowerUps.includes(powerUp.powerUpKey));
+        const availablePowerUps = powerUps.filter(powerUp => !this.selectedPowerUps.some(selectedPowerUp => selectedPowerUp.powerUpKey === powerUp.powerUpKey));
 
  
         Phaser.Utils.Array.Shuffle(availablePowerUps);

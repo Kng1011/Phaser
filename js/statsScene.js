@@ -50,9 +50,9 @@ export default class StatsScene extends Phaser.Scene{
         }).setOrigin(0.5);
 
         this.playerAttributes.selectedSkills.forEach((skill, index) => {
-            const baseX = 430 + 25 * (index + 1);
-            const baseY = 100;
-        
+            const baseX = 430;
+            const baseY = 100 + 25 * (index + 1);
+    
             this.add.text(
                 baseX, 
                 baseY, 
