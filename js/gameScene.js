@@ -145,7 +145,7 @@ export default class GameScene extends Phaser.Scene {
                     this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
                     break;
                 case 'darkBoltAttack':
-                    this.darkBoltAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+                    this.darkBoltAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
                     break;
             }
         });
