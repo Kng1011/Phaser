@@ -18,20 +18,20 @@ export default class GameOverScene extends Phaser.Scene {
             {font: '96px Chiller', fill: '#fff'}
         ).setOrigin(0.5);
 
-        const restartButton = this.add.text(400, 320, 'Restart', 
+        const restartButton = this.add.text(100, 550, 'Restart', 
             {font: '64px Chiller', fill: '#fff'}
         ).setOrigin(0.5).setInteractive().on('pointerdown', () => this.restartGame());
 
-        const leaveButton = this.add.text(400, 420, 'Leave',
+        const leaveButton = this.add.text(700, 550, 'Leave',
             {font: '64px Chiller', fill: '#fff'}
         ).setOrigin(0.5).setInteractive().on('pointerdown', () => this.leaveGame());
    
-        this.add.text(400, 300, `Time: ${this.score}`,
-            { fontSize: '32px',
+        this.add.text(400, 300, `Final Score: ${this.score}`,
+            { font: '50px Chiller',
             fill: '#FFF' }).setOrigin(0.5);
 
-        this.add.text(400, 350, `High Score: ${this.highScore}`,
-            { fontSize: '32px', 
+        this.add.text(400, 360, `High Score: ${this.highScore}`,
+            { font: '50px Chiller', 
               fill: '#FFF' }).setOrigin(0.5);
     }
 
