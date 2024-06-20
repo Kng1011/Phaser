@@ -18,14 +18,12 @@ export default class SkillSelectionScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
 
-
         if (this.level > 0) {
-            this.add.text(400, 100, 'Level Completed(' + this.level + ')' , {
+            this.add.text(400, 100, 'Level Completed(' + this.level + ')', {
                 fontSize: '20px',
                 color: '#ffffff'
             }).setOrigin(0.5);
         }
-        
 
         const skills = [
             {
@@ -40,7 +38,7 @@ export default class SkillSelectionScene extends Phaser.Scene {
                 description: 'Shoot a fireball that deals damage to enemies.',
                 cooldown: 'Cooldown: 2 seconds',
                 skillKey: 'fireball',
-                damage: 100 ,
+                damage: 100,
                 proficiency: 0
             },
             {
@@ -61,17 +59,17 @@ export default class SkillSelectionScene extends Phaser.Scene {
             }
         ];
 
-        
-        const availableSkills = skills.filter(skill => !this.selectedSkills.includes(skill.skillKey));
+        const availableSkills = skills.filter(skill => !this.selectedSkills.some(selectedSkill => selectedSkill.skillKey === skill.skillKey));
 
         Phaser.Utils.Array.Shuffle(availableSkills);
         const selectedSkills = availableSkills.slice(0, 3);
 
-        skills.forEach((skill, index) => {
-            if(skill.damage)
-            skill.damage += 2 * skill.proficiency;
+        skills.forEach((skill) => {
+            if (skill.damage) {
+                skill.damage += 2 * skill.proficiency;
+            }
         });
-        
+
         selectedSkills.forEach((skill, index) => {
             const yPos = 200 + index * 100;
             const skillButton = this.add.text(400, yPos - 5, skill.name, {
@@ -92,8 +90,9 @@ export default class SkillSelectionScene extends Phaser.Scene {
     }
 
     selectSkill(skill) {
-        
-        this.selectedSkills.push(skill);
+        if (!this.selectedSkills.some(selectedSkill => selectedSkill.skillKey === skill.skillKey)) {
+            this.selectedSkills.push(skill);
+        }
         this.scene.start('GameScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
     }
 }
