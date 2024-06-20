@@ -68,6 +68,16 @@ export default class GameScene extends Phaser.Scene {
         this.enemiesGroupOnField = null;
         this.maxKillsReached = false;
         this.pauseKey = null;
+
+        this.playerAttributes = {
+            playerSpeed: 0,
+            playerAttack: 0,
+            playerAttackSpeed: 0,
+            playerHealth: 0,
+            playerMaxHealth: 0,
+            selectedSkills: [],
+            selectedPowerUps: []
+        };
         
     }
 
@@ -274,6 +284,16 @@ export default class GameScene extends Phaser.Scene {
     
     }
 
+    updatePlayerAtributes() {
+        this.playerAttributes.playerSpeed = this.playerSpeed;
+        this.playerAttributes.playerAttack = this.playerAttack;
+        this.playerAttributes.playerAttackSpeed = this.playerAttackSpeed;
+        this.playerAttributes.playerHealth = this.playerHealth;
+        this.playerAttributes.playerMaxHealth = this.playerMaxHealth;
+        this.playerAttributes.selectedSkills = this.selectedSkills;
+        this.playerAttributes.selectedPowerUps = this.selectedPowerUps;
+    }
+
     applyPowerUp(powerUp) {
         if (powerUp === 'health') {
             this.playerMaxHealth = 150;
@@ -382,7 +402,7 @@ export default class GameScene extends Phaser.Scene {
 
         if(Phaser.Input.Keyboard.JustDown(this.pauseKey)){
             this.scene.pause();
-            this.scene.launch('PauseScene');
+            this.scene.launch('PauseScene', {playerAttributes: this.playerAttributes});
         }
     
         if (this.player.anims.currentAnim && this.player.anims.currentAnim.key.startsWith('attack') && this.player.anims.isPlaying) {
@@ -443,7 +463,8 @@ export default class GameScene extends Phaser.Scene {
         if (this.enemiesOnField < this.numberOfEnemies) {
             this.spawnEnemy(this.enemyType.key);
         }
-    
+        
+        this.updatePlayerAtributes();
         this.TimeOver();
         this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
     }

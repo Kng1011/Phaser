@@ -1,6 +1,20 @@
 export default class PauseScene extends Phaser.Scene {
     constructor() {
         super({ key: 'PauseScene' });
+        this.playerAttributes = {
+            playerSpeed: 0,
+            playerAttack: 0,
+            playerAttackSpeed: 0,
+            playerHealth: 0,
+            playerMaxHealth: 0,
+            selectedSkills: [],
+            selectedPowerUps: []
+        };
+
+    }
+
+    init(data) {
+        this.playerAttributes = data.playerAttributes;
     }
 
     create() {
