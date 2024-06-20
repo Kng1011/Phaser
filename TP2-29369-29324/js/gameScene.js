@@ -198,7 +198,7 @@ export default class GameScene extends Phaser.Scene {
         this.enemyType = filteredEnemies[randomIndex];
 
         if (this.level % 5 === 0 && this.enemiesOnField === 0 && this.level !== 0) {
-            this.enemyType = 'boss';
+            this.enemyType = this.enemies.find(enemy => enemy.key === 'boss');
         }
 
         this.enemiesGroup = this.physics.add.group({
