@@ -43,9 +43,8 @@ export default class GameScene extends Phaser.Scene {
         this.healHeath = 0;
 
         this.lightRadius = 100; 
-        this.lightDecreaseRate = 3; 
+        this.lightDecreaseRate = 5; 
         this.maxLightRadius = 200; 
-        this.minLightRadius = 50;
         this.fireballLightMask = null;
         this.fireballLightRadius = 50;
         this.killCount = 0;
@@ -61,6 +60,14 @@ export default class GameScene extends Phaser.Scene {
         this.skillFrames = [];
         this.selectedSkills = [];
         this.selectedPowerUps = [];
+        this.level = 0;
+        this.mask2 = null;
+        this.numberOfEnemies = 0;
+        this.enemiesOnField = 0;
+
+        this.enemiesGroupOnField = null;
+        this.maxKillsReached = false;
+        this.pauseKey = null;
         
     }
 
@@ -88,8 +95,14 @@ export default class GameScene extends Phaser.Scene {
         this.canShootFireball = true;
         this.canDarkAttack = true;
         this.canDarkBoltAttack = true;
+        this.maxKills += this.level * 5;
         console.log(this.selectedSkills);
         console.log(this.selectedPowerUps);
+        this.numberOfEnemies += 1;
+        this.enemiesOnField = 0;
+        this.maxKillsReached = false;
+
+        console.log("Numero de inimigos:" + this.numberOfEnemies);
     }
 
     create() {
@@ -99,9 +112,11 @@ export default class GameScene extends Phaser.Scene {
 
         this.setupAnimations();
         this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+        this.pauseKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+
 
         this.selectedSkills.forEach(skill => {
-            switch (skill) {
+            switch (skill.skillKey) {
                 case 'fireball':
                     this.fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
                     break;
@@ -123,25 +138,25 @@ export default class GameScene extends Phaser.Scene {
             {
                 key: 'zombie',
                 health: 100,
-                attack: 10,
+                attack: 5,
                 speed: 50,
                 attackSpeed: 1000,
                 attackRange: 25
             },
             {
                 key: 'troll',
-                health: 200,
-                attack: 20,
-                speed: 100,
+                health: 150,
+                attack: 7,
+                speed: 70,
                 attackSpeed: 1500,
                 attackRange: 30
             },
             {
                 key: 'skeleton',
                 health: 50,
-                attack: 5,
-                speed: 150,
-                attackSpeed: 500,
+                attack: 3,
+                speed: 90,
+                attackSpeed: 2000,
                 attackRange: 20
             }
         ]
@@ -156,7 +171,7 @@ export default class GameScene extends Phaser.Scene {
             }
         );
 
-        this.spawnEnemy(this.enemyType.key);
+        this.enemiesGroupOnField = this.add.group();
 
         this.darkness = this.make.graphics();
         this.darkness.fillStyle(0x000000, 1);
@@ -169,9 +184,11 @@ export default class GameScene extends Phaser.Scene {
         this.lightMask.setBlendMode(Phaser.BlendModes.ERASE);
 
         const mask = this.darkness.createBitmapMask(this.lightMask);
+        this.mask2 = this.darkness.createBitmapMask(this.lightMask);
         this.layer1.setMask(mask);
         this.player.setMask(mask);
-
+        
+       
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = {
             up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
@@ -209,13 +226,13 @@ export default class GameScene extends Phaser.Scene {
         const baseY = 560;
         const frameOffset = 70;
         this.selectedSkills.forEach((skill, index) => {
-            if (skill === 'fireball') {
+            if (skill.skillKey === 'fireball') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'fireball');
-            } else if (skill === 'darkAttack') {
+            } else if (skill.skillKey === 'darkAttack') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'DarkAttack1');
-            } else if (skill === 'flash') {
+            } else if (skill.skillKey === 'flash') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'flash');
-            } else if (skill === 'darkBoltAttack') {
+            } else if (skill.skillKey === 'darkBoltAttack') {
                 this.addSkillFrame(baseX + index * frameOffset, baseY, 'darkBoltAttack');
             }
         });
@@ -258,7 +275,7 @@ export default class GameScene extends Phaser.Scene {
         this.lightFlash.setAlpha(0);
 
         this.selectedPowerUps.forEach(powerUp => {
-            this.applyPowerUp(powerUp);
+            this.applyPowerUp(powerUp.powerUpKey);
         });
 
         this.physics.world.createDebugGraphic();
@@ -331,16 +348,14 @@ export default class GameScene extends Phaser.Scene {
         this.lightMask.fillStyle(0xffffff, 1);
         this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
         this.player.setVelocity(0);
-
-        console.log(this.playerHealth);
-
+    
         this.fireballs.children.each(function(fireball) {
             if (fireball.active) {
                 this.lightMask.fillStyle(fireball.fireballLightColor, 1);
                 this.lightMask.fillCircle(fireball.x, fireball.y, fireball.fireballLightRadius);
             }
         }, this);
-
+    
         let isMoving = false;
         let attack = false;
     
@@ -371,20 +386,28 @@ export default class GameScene extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
             attack = true;
             this.player.anims.play('attack' + this.direction.toLowerCase(), true);
-            this.dealDamage();  
-                
+            this.enemiesGroupOnField.children.iterate((enemy) => {
+                if (enemy && enemy.active) {
+                    this.dealDamage(enemy);  
+                }
+            });
         }
-        
+
+        if(Phaser.Input.Keyboard.JustDown(this.pauseKey)){
+            this.scene.pause();
+            this.scene.launch('PauseScene');
+        }
+    
         if (this.player.anims.currentAnim && this.player.anims.currentAnim.key.startsWith('attack') && this.player.anims.isPlaying) {
             attack = true;
         } else {
             attack = false;
         }
-
+    
         if (!isMoving && !attack) {
             this.player.anims.stop();
         }
-
+    
         if (this.fireballKey && Phaser.Input.Keyboard.JustDown(this.fireballKey) && this.canShootFireball) {
             this.shootFireball();
         }
@@ -396,64 +419,73 @@ export default class GameScene extends Phaser.Scene {
         if (this.mapFlashKey && Phaser.Input.Keyboard.JustDown(this.mapFlashKey)) {
             this.flashMap(this.layer1);
         }
-
+    
         if (this.darkBoltAttackKey && Phaser.Input.Keyboard.JustDown(this.darkBoltAttackKey) && this.canDarkBoltAttack) {
             this.darkBoltAttack1();
         }
     
-        if (this.enemy) {
-            const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y);
-        
-            if (distance < this.enemyAttackRange) {
-                this.enemy.setVelocity(0, 0);
-
-                if (this.enemy.anims.currentAnim.key !=  this.enemy.key + 'Attack') {
-                    this.time.addEvent({
-                        delay: this.enemy.attackSpeed, 
-                        callback: () => {
-                            this.enemy.anims.play( this.enemy.key + 'Attack', true);
-                        },
-                        callbackScope: this,
-                        loop: true 
-                    });
-                }
-        
-                if (!this.enemyAttackTimer || this.time.now > this.enemyAttackTimer) {
-                    if (this.playerHealth > 0) {
-                        this.playerHealth -= 5; 
+        this.enemiesGroupOnField.children.iterate((enemy) => {
+            if (enemy && enemy.active) {
+                const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
+    
+                if (distance < enemy.attackRange) {
+                    enemy.setVelocity(0, 0);
+    
+                    if (enemy.anims.currentAnim && enemy.anims.currentAnim.key !== enemy.key + 'Attack') {
+                        enemy.anims.play(enemy.key + 'Attack', true);
+                        enemy.isAttacking = true;
                     }
-                    this.enemyAttackTimer = this.time.now + 1000; 
+    
+                    if (enemy.isAttacking && enemy.anims.currentFrame && enemy.anims.currentFrame.isLast) {
+                        if (!enemy.hasAttacked) {
+                            this.applyDamageToPlayer(enemy);
+                            enemy.hasAttacked = true;
+                        }
+                    } else {
+                        enemy.hasAttacked = false;
+                    }
+                } else {
+                    this.physics.moveToObject(enemy, this.player, enemy.speed);
+                    this.updateEnemyAnimation(enemy.body.velocity, enemy);
                 }
-            } else {
-               
-                this.physics.moveToObject(this.enemy, this.player, 100);
-                this.updateEnemyAnimation(this.enemy.body.velocity);
+    
+                this.updateEnemyHealthBar(enemy);
             }
-        
-            const isEnemyVisible = distance <= this.lightRadius;
-            this.enemy.setVisible(isEnemyVisible);
-            this.enemyHealthBar.setVisible(isEnemyVisible);
+        });
+    
+        if (this.enemiesOnField < this.numberOfEnemies) {
+            this.spawnEnemy(this.enemyType.key);
         }
     
-        this.updatePlayerHealthBar();
-        this.updateEnemyHealthBar();
+        this.TimeOver();
         this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
+    }
+    
 
-      
+    applyDamageToPlayer(enemy) {
+        if (this.playerHealth > 0) {
+            this.playerHealth -= enemy.attack;
+            this.updatePlayerHealthBar();
+        }
     }
 
-    updateEnemyAnimation(velocity) {
-
-        if (this.direction === 'right') {
-            this.enemy.anims.play( this.enemy.key + 'WalkRight', true);
-        } else if (this.direction === 'left') {
-            this.enemy.anims.play( this.enemy.key + 'WalkLeft', true);
-        } else if (this.direction === 'forward') {
-            this.enemy.anims.play( this.enemy.key + 'WalkForward', true);
-        } else if (this.direction === 'backwards') {
-            this.enemy.anims.play( this.enemy.key + 'WalkBackwards', true);
+    updateEnemyAnimation(velocity, enemy) {
+        if (velocity.x > 0) {
+            enemy.anims.play(enemy.key + 'WalkRight', true);
+        } else if (velocity.x < 0) {
+            enemy.anims.play(enemy.key + 'WalkLeft', true);
         }
-    }   
+    
+        if (velocity.y > 0) {
+            enemy.anims.play(enemy.key + 'WalkBackwards', true);
+        } else if (velocity.y < 0) {
+            enemy.anims.play(enemy.key + 'WalkForward', true);
+        }
+        if (velocity.x === 0 && velocity.y === 0) {
+            enemy.anims.stop(); 
+        }
+    }
+      
 
     setupEnemyAnimation(enemyType) {
         switch (enemyType) {
@@ -553,7 +585,7 @@ export default class GameScene extends Phaser.Scene {
                 frames: this.anims.generateFrameNumbers('troll', { start: 14, end: 15 }),
                 frameRate: 10,
                 repeat: -1,
-                yoyo: true // Inverte a animação
+                yoyo: true 
             });
         }
     
@@ -601,7 +633,7 @@ export default class GameScene extends Phaser.Scene {
                 frames: this.anims.generateFrameNumbers('skeleton', { start: 8, end: 9 }),
                 frameRate: 10,
                 repeat: -1,
-                yoyo: true // Inverte a animação
+                yoyo: true 
             });
         }
     
@@ -730,54 +762,71 @@ export default class GameScene extends Phaser.Scene {
     }
 }
 
-spawnEnemy(enemyTypeKey) {
-    const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
-    const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
-    const newEnemy = this.enemiesGroup.get(randomX, randomY, enemyTypeKey);
+    spawnEnemy(enemyTypeKey) {
+        const randomX = Phaser.Math.Between(50, this.cameras.main.width - 50);
+        const randomY = Phaser.Math.Between(50, this.cameras.main.height - 50);
+        const newEnemy = this.enemiesGroup.get(randomX, randomY, enemyTypeKey, false, true); 
 
-    if (!newEnemy) {
-        console.error('Falha ao gerar novo inimigo:', enemyTypeKey);
-        return; 
+        if (!newEnemy) {
+            console.error('Falha ao gerar novo inimigo:', enemyTypeKey);
+            return;
+        }
+        
+        newEnemy.setScale(2);
+        newEnemy.setPosition(randomX, randomY);
+        newEnemy.health = this.enemyType.health * (1 + 0.05 * this.level);
+        newEnemy.speed = this.enemyType.speed * (1 + 0.05 * this.level);
+        newEnemy.attack = this.enemyType.attack * (1 + 0.05 * this.level);
+        newEnemy.attackSpeed = this.enemyType.attackSpeed;
+        newEnemy.attackRange = this.enemyType.attackRange;
+        newEnemy.key = enemyTypeKey;
+        newEnemy.healthBar = this.add.graphics();
+        newEnemy.setMask(this.mask2);
+        newEnemy.setActive(true).setVisible(true);
+
+        this.setupEnemyAnimation(newEnemy.key);
+        this.enemiesGroupOnField.add(newEnemy);
+        this.enemiesOnField++;
     }
 
-    this.enemy = newEnemy.setScale(2);
-    this.enemy.key = enemyTypeKey;
-    this.setupEnemyAnimation(this.enemy.key); 
-    this.enemy.health = this.enemyType.health; 
-    this.enemy.attack = this.enemyType.attack;
-    this.enemy.speed = this.enemyType.speed;
-    this.enemy.attackSpeed = this.enemyType.attackSpeed;
-    this.enemy.attackRange = this.enemyType.attackRange;
-    this.enemyHealthBar = this.add.graphics();
-    this.updateEnemyHealthBar();
-}
+    activateEnemies() {
+        this.enemiesGroupOnField.children.iterate(function (enemy) {
+            enemy.setActive(true).setVisible(true).setRandomPosition(0, 0, this.cameras.main.width, this.cameras.main.height);
+        }, this);
+    }
 
-    dealDamage() {
-        if (this.enemy && Phaser.Math.Distance.Between(this.player.x, this.player.y, this.enemy.x, this.enemy.y) < this.enemyAttackRange) {
-            this.enemyHealth -= this.playerAttack;
-            if (this.enemyHealth <= 0) {
-                this.enemy.destroy();
-                this.enemyHealthBar.destroy();
-                this.spawnEnemy(this.enemy.key);
-                this.increaseLightRadius();
+
+    dealDamage(enemy) {
+        if (enemy && Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y) < enemy.attackRange) {
+            enemy.health -= this.playerAttack;
+            if (enemy.health <= 0) {
+                if (enemy.healthBar) {
+                    enemy.healthBar.destroy();
+                }
+                enemy.destroy();
+                this.enemiesOnField--;
+                this.spawnEnemy(this.enemyType.key);
+                this.increaseLightRadius(); 
                 this.incrementKillCount();
                 if (this.playerHealth + 10 < this.playerMaxHealth) {
                     this.playerHealth += this.healHeath;
                 }
             }
+            this.updateEnemyHealthBar(enemy);
         }
     }
 
-    updateEnemyHealthBar() {
-        if (this.enemy && this.enemyHealthBar) {
-            this.enemyHealthBar.clear();
-            this.enemyHealthBar.fillStyle(0xff0000, 1);
-            this.enemyHealthBar.fillRect(this.enemy.x - 32, this.enemy.y - 40, (this.enemyHealth / 100) * 64, 10);
-            this.enemyHealthBar.setDepth(11);
+    updateEnemyHealthBar(enemy) {
+        if (enemy && enemy.healthBar) {
+            enemy.healthBar.clear();
+            enemy.healthBar.fillStyle(0xff0000, 1);
+            const healthPercent = enemy.health / this.enemyType.health;
+            const barWidth = 64 * healthPercent;
+            enemy.healthBar.fillRect(enemy.x - 32, enemy.y - 40, barWidth, 10);
+            enemy.healthBar.setDepth(11);
         }
     }
-
-
+    
     flashMap(layer) {
         if (!this.mapVisible) {
             this.mapVisible = true; this.lightFlash.clear();
@@ -814,42 +863,42 @@ spawnEnemy(enemyTypeKey) {
     
 
     shootFireball() {
-    if (!this.canShootFireball) return;
-    this.canShootFireball = false;
-    this.fireballCooldownGraphic.setTint(0xff0000);
-
-    const fireball = this.fireballs.get(this.player.x, this.player.y, 'fireball').setScale(2);
-    fireball.body.setSize(32, 32);
-    fireball.body.setOffset((fireball.width -32) / 2, (fireball.height- 32 ) / 2);
+        if (!this.canShootFireball) return;
+        this.canShootFireball = false;
+        this.fireballCooldownGraphic.setTint(0xff0000);
     
-    fireball.anims.play('fireballAnim');
-
-    fireball.fireballLightRadius = this.fireballLightRadius;
-    fireball.fireballLightColor =  0xffa500;
-
-    this.physics.add.overlap(fireball, this.enemy, this.hitEnemy, null, this);
-
-    let velocityX = 0;
-    let velocityY = 0;
-    switch (this.direction) {
-        case 'left':
-            velocityX = -300;
-            fireball.angle = 180;  
-            break;
-        case 'right':
-            velocityX = 300;
-            fireball.angle = 0;    
-            break;
-        case 'forward':
-            velocityY = -300;
-            fireball.angle = -90; 
-            break;
-        case 'backwards':
-            velocityY = 300;
-            fireball.angle = 90;   
-            break;
-    }
-    fireball.setVelocity(velocityX, velocityY);
+        const fireball = this.fireballs.get(this.player.x, this.player.y, 'fireball').setScale(2);
+        fireball.body.setSize(32, 32);
+        fireball.body.setOffset((fireball.width - 32) / 2, (fireball.height - 32) / 2);
+    
+        fireball.anims.play('fireballAnim');
+    
+        fireball.fireballLightRadius = this.fireballLightRadius;
+        fireball.fireballLightColor = 0xffa500;
+    
+        this.physics.add.overlap(fireball, this.enemiesGroupOnField, this.hitEnemy, null, this);
+    
+        let velocityX = 0;
+        let velocityY = 0;
+        switch (this.direction) {
+            case 'left':
+                velocityX = -300;
+                fireball.angle = 180;
+                break;
+            case 'right':
+                velocityX = 300;
+                fireball.angle = 0;
+                break;
+            case 'forward':
+                velocityY = -300;
+                fireball.angle = -90;
+                break;
+            case 'backwards':
+                velocityY = 300;
+                fireball.angle = 90;
+                break;
+        }
+        fireball.setVelocity(velocityX, velocityY);
         this.time.addEvent({
             delay: this.fireballCooldownTime,
             callback: () => {
@@ -868,7 +917,7 @@ spawnEnemy(enemyTypeKey) {
         const darkAttack = this.darkattacks.get(this.player.x, this.player.y, 'DarkAttack1').setScale(2);
         darkAttack.anims.play('DarkAttackAnim');
     
-        this.physics.add.overlap(darkAttack, this.enemy, (darkAttack, enemy) => {
+        this.physics.add.overlap(darkAttack, this.enemiesGroupOnField, (darkAttack, enemy) => {
             darkAttack.anims.play('DarkAttackAnimHit');
             this.hitEnemy(darkAttack, enemy);
         }, null, this);
@@ -878,19 +927,19 @@ spawnEnemy(enemyTypeKey) {
         switch (this.direction) {
             case 'left':
                 velocityX = -300;
-                darkAttack.angle = 180;  
+                darkAttack.angle = 180;
                 break;
             case 'right':
                 velocityX = 300;
-                darkAttack.angle = 0;    
+                darkAttack.angle = 0;
                 break;
             case 'forward':
                 velocityY = -300;
-                darkAttack.angle = -90; 
+                darkAttack.angle = -90;
                 break;
             case 'backwards':
                 velocityY = 300;
-                darkAttack.angle = 90;   
+                darkAttack.angle = 90;
                 break;
         }
         darkAttack.setVelocity(velocityX, velocityY);
@@ -911,25 +960,23 @@ spawnEnemy(enemyTypeKey) {
         if (this.darkBoltAttackCooldownTimeGraphic)
             this.darkBoltAttackCooldownTimeGraphic.setTint(0xff0000);
     
-        const numBolts = 8; 
-        const radius = 100; 
+        const numBolts = 8;
+        const radius = 100;
     
         for (let i = 0; i < numBolts; i++) {
-           
             const angle = Phaser.Math.FloatBetween(0, 2 * Math.PI);
-            
             const posX = this.player.x + radius * Math.cos(angle);
             const posY = this.player.y + radius * Math.sin(angle);
     
             const darkBoltAttack = this.darkBoltAttacks.create(posX, posY, 'boltdark').setScale(2);
             darkBoltAttack.anims.play('DarkBoltAttackAnim');
     
-            this.physics.add.collider(darkBoltAttack, this.enemy, (darkBoltAttack, enemy) => {
+            this.physics.add.collider(darkBoltAttack, this.enemiesGroupOnField, (darkBoltAttack, enemy) => {
                 this.hitEnemy2(darkBoltAttack, enemy);
             }, null, this);
     
             darkBoltAttack.on('animationcomplete', () => {
-                darkBoltAttack.destroy(); 
+                darkBoltAttack.destroy();
             });
         }
     
@@ -946,32 +993,43 @@ spawnEnemy(enemyTypeKey) {
     
     
     hitEnemy(attack, enemy) {
-        attack.destroy();
-        this.enemyHealth -= 100;
-        if (this.enemyHealth <= 0) {
-            this.enemy.destroy();
-            this.enemyHealthBar.destroy();
-            this.spawnEnemy();
-            this.incrementKillCount();
-            this.increaseLightRadius();
+        if (attack) {
+            attack.destroy();
+        }
+        if (enemy) {
+            enemy.health -= 100;
+            if (enemy.health <= 0) {
+                if (enemy.healthBar) {
+                    enemy.healthBar.destroy();
+                }
+                enemy.destroy();
+                this.enemiesOnField--;
+                this.spawnEnemy(this.enemyType.key);
+                this.incrementKillCount();
+                this.increaseLightRadius();
+            }
         }
     }
-
+    
     hitEnemy2(attack, enemy) {
-
-        if(!attack.anims.isPlaying){
-        atacck.destroy();
+        if (attack && !attack.anims.isPlaying) {
+            attack.destroy();
         }
-
-        this.enemyHealth -= 100;
-        if (this.enemyHealth <= 0) {
-            this.enemy.destroy();
-            this.enemyHealthBar.destroy();
-            this.spawnEnemy();
-            this.incrementKillCount();
-            this.increaseLightRadius(); 
+        if (enemy) {
+            enemy.health -= 100;
+            if (enemy.health <= 0) {
+                if (enemy.healthBar) {
+                    enemy.healthBar.destroy();
+                }
+                enemy.destroy();
+                this.enemiesOnField--;
+                this.spawnEnemy(this.enemyType.key);
+                this.incrementKillCount();
+                this.increaseLightRadius();
+            }
         }
     }
+    
 
 
     updatePlayerHealthBar() {
@@ -982,6 +1040,7 @@ spawnEnemy(enemyTypeKey) {
         if(this.playerHealth <= 0){
             this.scene.start('GameOverScene');
         }
+        console.log(this.playerHealth);
     }
 
     increaseLightRadius() {
@@ -997,36 +1056,46 @@ spawnEnemy(enemyTypeKey) {
     }
 
     decreaseLightRadius() {
-        if (this.lightRadius > this.minLightRadius) {
-            this.lightRadius -= this.lightDecreaseRate;
-            if (this.lightRadius < this.minLightRadius) {
-                this.lightRadius = this.minLightRadius;
-            }
-            this.lightMask.clear();
-            this.lightMask.fillStyle(0xffffff, 1);
-            this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
-        }
+
+        this.lightRadius -= this.lightDecreaseRate;
+        this.lightMask.clear();
+        this.lightMask.fillStyle(0xffffff, 1);
+        this.lightMask.fillCircle(this.player.x, this.player.y, this.lightRadius);
+        
     }
 
     incrementKillCount() {
         this.killCount += 1;
-        if (this.killCount >= this.maxKills) {
+        if (this.killCount >= this.maxKills && !this.maxKillsReached) {
             this.handleMaxKillsReached();
         }
     }
 
     handleMaxKillsReached() {
+        if (this.maxKillsReached) {
+            return; 
+        }
+    
+        this.maxKillsReached = true; 
+    
         console.log("Limite máximo de kills atingido!");
     
         const randomScene = Math.random();
+        this.level += 1;
     
         if (randomScene < 0.5) {
-           
-            this.scene.start('SkillSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
+            this.scene.start('SkillSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps, level: this.level });
         } else {
-            
-            this.scene.start('PowerUpSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps });
+            this.scene.start('PowerUpSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps, level: this.level });
         }
+    }
+
+    TimeOver() {
+        if(this.lightRadius == 0){
+            this.scene.start('GameOverScene');
+            this.level = 0;
+        }
+        
     }
     
 }

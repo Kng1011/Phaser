@@ -3,11 +3,13 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
         super({ key: 'PowerUpSelectionScene' });
         this.selectedSkills = [];
         this.selectedPowerUps = [];
+        this.level = 0;
     }
 
     init(data) {
         this.selectedSkills = data.selectedSkills || [];
         this.selectedPowerUps = data.selectedPowerUps || [];
+        this.level = data.level || 0;
     }
 
     create() {
@@ -16,6 +18,13 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
 
+        if (this.level > 0) {
+            this.add.text(400, 125, 'Level Completed(' + this.level + ')' , {
+                fontSize: '20px',
+                color: '#ffffff'
+            }).setOrigin(0.5);   
+        }
+        
         const powerUps = [
             {
                 name: 'Health Boost',
@@ -62,7 +71,7 @@ export default class PowerUpSelectionScene extends Phaser.Scene {
             const powerUpButton = this.add.text(400, yPos, powerUp.name, {
                 font: '64px Chiller',
                 color: '#ffffff'
-            }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectPowerUp(powerUp.powerUpKey));
+            }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectPowerUp(powerUp));
 
             this.add.text(400, yPos + 40, powerUp.description, {
                 font: '36px Chiller',

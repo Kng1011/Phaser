@@ -34,7 +34,7 @@ export default class ControlsScene extends Phaser.Scene {
         const M = this.add.text(590, 320, 'M', {
             font: '30px Chiller',
             fill: '#ffffff'
-        }).setScale(2);
+        });
 
         // Calculando a posição do texto para ficar entre as duas imagens
         const textX = (letras.x + setas.x) / 2;

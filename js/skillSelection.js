@@ -3,11 +3,13 @@ export default class SkillSelectionScene extends Phaser.Scene {
         super({ key: 'SkillSelectionScene' });
         this.selectedSkills = [];
         this.selectedPowerUps = [];
+        this.level = 0;
     }
 
     init(data) {
         this.selectedSkills = data.selectedSkills || [];
         this.selectedPowerUps = data.selectedPowerUps || [];
+        this.level = data.level || 0;
     }
 
     create() {
@@ -15,6 +17,15 @@ export default class SkillSelectionScene extends Phaser.Scene {
             font: '64px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
+
+
+        if (this.level > 0) {
+            this.add.text(400, 100, 'Level Completed(' + this.level + ')' , {
+                fontSize: '20px',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+        }
+        
 
         const skills = [
             {
@@ -48,14 +59,13 @@ export default class SkillSelectionScene extends Phaser.Scene {
 
         Phaser.Utils.Array.Shuffle(availableSkills);
         const selectedSkills = availableSkills.slice(0, 3);
-
         
         selectedSkills.forEach((skill, index) => {
             const yPos = 200 + index * 100;
             const skillButton = this.add.text(400, yPos - 5, skill.name, {
                 font: '50px Chiller',
                 color: '#ffffff'
-            }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectSkill(skill.skillKey));
+            }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.selectSkill(skill));
 
             this.add.text(400, yPos + 30, skill.description, {
                 font: '26px Chiller',
