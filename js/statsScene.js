@@ -103,7 +103,7 @@ export default class StatsScene extends Phaser.Scene{
                 color: '#ffffff'
             }).setOrigin(0.5);
 
-            this.add.text(680, 100 + 50 * (index + 1), 'N' + powerUp.number , {
+            this.add.text(680, 100 + 50 * (index + 1), 'N ' + powerUp.number , {
                 font: '20px Chiller',
                 color: '#ffffff'
             }).setOrigin(0.5);
