@@ -20,18 +20,23 @@ export default class PauseScene extends Phaser.Scene {
     create() {
         this.cameras.main.setBackgroundColor('#000000');
 
-        this.add.text(400, 150, 'Continue', {
-            fontSize: '32px',
+        this.add.text(400, 150, 'Game Paused', {
+            font: '128px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.Continue());
 
-        this.add.text(400, 250, 'Stats', {
-            fontSize: '32px',
+        this.add.text(500, 350, 'Continue', {
+            font: '64px Chiller',
+            color: '#ffffff'
+        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.Continue());
+
+        this.add.text(375, 450, 'Stats', {
+            font: '64px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.Stats());
 
-        this.add.text(400, 350, 'Leave', {
-            fontSize: '32px',
+        this.add.text(250, 350, 'Leave', {
+            font: '64px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.Leave());
 
