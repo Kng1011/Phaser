@@ -13,26 +13,31 @@ export default class ControlsScene extends Phaser.Scene {
         this.load.spritesheet('fireball', 'assets/fireball.png', { frameWidth: 64, frameHeight: 32 });
         this.load.spritesheet('DarkAttack1', 'assets/DarkVFX1.png', { frameWidth: 40, frameHeight: 32 });
         this.load.image('Frame', 'assets/Frame.png');
+        this.load.spritesheet('boltdark', 'assets/DarkBolt.png', { frameWidth: 64, frameHeight: 88 });
     }
 
     create() {
         // Adicionando as imagens
         const letras = this.add.sprite(150, 100, 'letras' ).setScale(1);
         const setas = this.add.sprite(650, 100, 'setas').setScale(1);
-        const E = this.add.text(150, 210, 'E',{
+        const E = this.add.text(150, 210, 'I',{
             font: '30px Chiller',
             fill: '#ffffff'
         }).setScale(2);
-        const Q = this.add.text(190, 320, 'Q', {
+        const Q = this.add.text(190, 320, 'P', {
             font: '30px Chiller',
             fill: '#ffffff'
         }).setScale(2);
-        const Z = this.add.text(90, 320, 'Z', {
+        const Z = this.add.text(90, 320, 'O', {
             font: '30px Chiller',
             fill: '#ffffff'
         }).setScale(2);
-        const M = this.add.text(590, 320, 'M', {
-            font: '30px Chiller',
+        const M = this.add.text(590, 320, 'U', {
+            font: '60px Chiller',
+            fill: '#ffffff'
+        });
+        const A = this.add.text(690, 320, 'Q', {
+            font: '60px Chiller',
             fill: '#ffffff'
         });
 
@@ -70,6 +75,10 @@ export default class ControlsScene extends Phaser.Scene {
         let skillGraphic3;
         skillGraphic3 = this.add.text(600 , 420, 'Flash', { fontSize: '17px', color: '#fff' }).setOrigin(0.5);
 
+        const frame4 = this.add.sprite(700, 420, 'Frame').setScale(1.8);
+        let skillGraphic4;
+        skillGraphic4 = this.add.sprite(695, 410, 'boltdark', 3).setScale(0.75);
+
         frame1.setDepth(6);
         skillGraphic1.setDepth(7);       
 
@@ -78,6 +87,9 @@ export default class ControlsScene extends Phaser.Scene {
 
         frame3.setDepth(10);
         skillGraphic3.setDepth(11);
+
+        frame4.setDepth(12);
+        skillGraphic4.setDepth(13);
 
         // Adicionando o botão de voltar
         const backButton = this.add.text(100, 550, '< Back', {

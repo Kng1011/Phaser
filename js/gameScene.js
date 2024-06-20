@@ -127,23 +127,23 @@ export default class GameScene extends Phaser.Scene {
         this.layer1 = map.createLayer('Camada de Blocos 1', tileset);
 
         this.setupAnimations();
-        this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+        this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
         this.pauseKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
 
         this.selectedSkills.forEach(skill => {
             switch (skill.skillKey) {
                 case 'fireball':
-                    this.fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+                    this.fireballKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
                     break;
                 case 'darkAttack':
-                    this.darkAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+                    this.darkAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O);
                     break;
                 case 'flash':
-                    this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+                    this.mapFlashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.U);
                     break;
                 case 'darkBoltAttack':
-                    this.darkBoltAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+                    this.darkBoltAttackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
                     break;
             }
         });
