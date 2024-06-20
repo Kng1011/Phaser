@@ -23,12 +23,15 @@ export default class GameScene extends Phaser.Scene {
         this.canDarkAttack = true;
         this.darkAttacksCooldownTime = 3000;
         this.darkAttacksCooldownTimeGraphic = null;
+        this.darkAttackDamage = 0;
         this.fireballs = null;
         this.canShootFireball = true;
         this.fireballCooldownTime = 2000; 
         this.fireballCooldownGraphic = null;
+        this.fireballDamage = 0;
         this.darkBoltAttack = null;
         this.canDarkBoltAttack = true;
+        this.darkBoltAttackDamage = 0;
         this.darkBoltAttackCooldownTime = 8000;
         this.darkBoltAttackCooldownTimeGraphic = null;
         
@@ -881,11 +884,21 @@ export default class GameScene extends Phaser.Scene {
         fireball.body.setOffset((fireball.width - 32) / 2, (fireball.height - 32) / 2);
     
         fireball.anims.play('fireballAnim');
-    
+
+        this.selectedSkills.forEach(skill => {
+            if (skill.skillKey === 'fireball' && skill.proficiency <=100) {
+                skill.proficiency++;
+                skill.damage  *= 1 + skill.proficiency/100 ;
+                this.fireballDamage = skill.damage;
+            }
+        });
+
         fireball.fireballLightRadius = this.fireballLightRadius;
         fireball.fireballLightColor = 0xffa500;
-    
-        this.physics.add.overlap(fireball, this.enemiesGroupOnField, this.hitEnemy, null, this);
+
+        this.physics.add.overlap(fireball, this.enemiesGroupOnField, (fireball, enemy) => {
+            this.hitEnemy(fireball, enemy);
+        }, null, this);
     
         let velocityX = 0;
         let velocityY = 0;
@@ -920,11 +933,20 @@ export default class GameScene extends Phaser.Scene {
 
     DarkAttack() {
         if (!this.canDarkAttack) return;
+        console.log("Dano: " + this.darkAttackDamage);
         this.canDarkAttack = false;
         this.darkAttacksCooldownTimeGraphic.setTint(0xff0000);
     
         const darkAttack = this.darkattacks.get(this.player.x, this.player.y, 'DarkAttack1').setScale(2);
         darkAttack.anims.play('DarkAttackAnim');
+
+        this.selectedSkills.forEach(skill => {
+            if (skill.skillKey === 'darkAttack' && skill.proficiency <=100) {
+                skill.proficiency++;
+                skill.damage  *= 1 + skill.proficiency/100 ;
+                this.darkAttackDamage = skill.damage;
+            }
+        });
     
         this.physics.add.overlap(darkAttack, this.enemiesGroupOnField, (darkAttack, enemy) => {
             darkAttack.anims.play('DarkAttackAnimHit');
@@ -971,6 +993,14 @@ export default class GameScene extends Phaser.Scene {
     
         const numBolts = 8;
         const radius = 100;
+
+        this.selectedSkills.forEach(skill => {
+            if (skill.skillKey === 'darkAttack' && skill.proficiency <=100) {
+                skill.proficiency++;
+                skill.damage  *= 1 + skill.proficiency/100 ;
+                this.darkBoltAttackDamage = skill.damage;
+            }
+        });
     
         for (let i = 0; i < numBolts; i++) {
             const angle = Phaser.Math.FloatBetween(0, 2 * Math.PI);
@@ -1006,18 +1036,27 @@ export default class GameScene extends Phaser.Scene {
             attack.destroy();
         }
         if (enemy) {
-            enemy.health -= 100;
+            if (attack.texture.key === 'fireball') {
+                enemy.health -= this.fireballDamage;
+            } else if (attack.texture.key === 'DarkAttack1') {
+                enemy.health -= this.darkAttackDamage;
+            }
+            this.updateEnemyHealthBar(enemy); 
             if (enemy.health <= 0) {
-                if (enemy.healthBar) {
-                    enemy.healthBar.destroy();
-                }
-                enemy.destroy();
-                this.enemiesOnField--;
-                this.spawnEnemy(this.enemyType.key);
-                this.incrementKillCount();
-                this.increaseLightRadius();
+                this.destroyEnemy(enemy);
             }
         }
+    }
+
+    destroyEnemy(enemy) {
+        if (enemy.healthBar) {
+            enemy.healthBar.destroy();
+        }
+        enemy.destroy(); 
+        this.enemiesOnField--;
+        this.spawnEnemy(this.enemyType.key);
+        this.incrementKillCount();
+        this.increaseLightRadius();
     }
     
     hitEnemy2(attack, enemy) {
@@ -1025,7 +1064,7 @@ export default class GameScene extends Phaser.Scene {
             attack.destroy();
         }
         if (enemy) {
-            enemy.health -= 100;
+            enemy.health -= this.darkBoltAttackDamage;
             if (enemy.health <= 0) {
                 if (enemy.healthBar) {
                     enemy.healthBar.destroy();

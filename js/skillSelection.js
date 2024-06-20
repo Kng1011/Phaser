@@ -32,25 +32,32 @@ export default class SkillSelectionScene extends Phaser.Scene {
                 name: 'Flash Map',
                 description: 'Briefly reveal the map for 1 second.',
                 cooldown: 'Cooldown: 5 seconds',
-                skillKey: 'flash'
+                skillKey: 'flash',
+                proficiency: 0
             },
             {
                 name: 'Fireball',
                 description: 'Shoot a fireball that deals damage to enemies.',
                 cooldown: 'Cooldown: 2 seconds',
-                skillKey: 'fireball'
+                skillKey: 'fireball',
+                damage: 100 ,
+                proficiency: 0
             },
             {
                 name: 'Dark Attack',
                 description: 'Launch a dark attack that deals significant damage.',
                 cooldown: 'Cooldown: 3 seconds',
-                skillKey: 'darkAttack'
+                skillKey: 'darkAttack',
+                damage: 120,
+                proficiency: 0
             },
             {
                 name: 'DarkBolt',
                 description: 'Shoot multiple dark bolts that deals damage to enemies.',
                 cooldown: 'Cooldown: 8 seconds',
-                skillKey: 'darkBoltAttack'
+                skillKey: 'darkBoltAttack',
+                damage: 150,
+                proficiency: 0
             }
         ];
 
@@ -59,6 +66,11 @@ export default class SkillSelectionScene extends Phaser.Scene {
 
         Phaser.Utils.Array.Shuffle(availableSkills);
         const selectedSkills = availableSkills.slice(0, 3);
+
+        skills.forEach((skill, index) => {
+            if(skill.damage)
+            skill.damage += 2 * skill.proficiency;
+        });
         
         selectedSkills.forEach((skill, index) => {
             const yPos = 200 + index * 100;
