@@ -1339,10 +1339,12 @@ spawnEnemy(enemyTypeKey) {
         const randomScene = Math.random();
         this.level += 1;
     
-        if (randomScene < 0.5) {
+        if (randomScene < 0.5 && this.selectedSkills.length <= 4) {
             this.scene.start('SkillSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps, level: this.level });
-        } else {
+        } else if(randomScene >= 0.5 && this.selectedPowerUps.length <= 6) {
             this.scene.start('PowerUpSelectionScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps, level: this.level });
+        } else {
+            this.scene.start('GameScene', { selectedSkills: this.selectedSkills, selectedPowerUps: this.selectedPowerUps, level: this.level });
         }
     }
 

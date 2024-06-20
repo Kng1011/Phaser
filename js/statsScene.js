@@ -51,11 +51,10 @@ export default class StatsScene extends Phaser.Scene{
 
         this.playerAttributes.selectedSkills.forEach((skill, index) => {
             const baseX = 430;
-            const baseY = 100 + 25 * (index + 1);
-    
+           
             this.add.text(
                 baseX, 
-                baseY, 
+                75 + 75 * (index + 1), 
                 `${skill.name}s`, 
                 {
                     font: '30px Chiller',
@@ -65,7 +64,7 @@ export default class StatsScene extends Phaser.Scene{
         
             this.add.text(
                 baseX, 
-                baseY + 20, 
+                100 + 50 * (index + 1), 
                 `Damage - ${skill.damage}`, 
                 {
                     font: '20px Chiller',
@@ -75,7 +74,7 @@ export default class StatsScene extends Phaser.Scene{
 
             this.add.text(
                 baseX, 
-                baseY + 40, 
+                125 + 50 * (index + 1), 
                 `Proficiency - ${skill.proficiency}%`, 
                 {
                     font: '20px Chiller',
