@@ -50,12 +50,40 @@ export default class StatsScene extends Phaser.Scene{
         }).setOrigin(0.5);
 
         this.playerAttributes.selectedSkills.forEach((skill, index) => {
-            this.add.text(430, 75 + 50 * (index + 1), skill.name, {
-                font: '30px Chiller',
-                color: '#ffffff'
-            }).setOrigin(0.5);
-        });
+            const baseX = 430 + 25 * (index + 1);
+            const baseY = 100;
+        
+            this.add.text(
+                baseX, 
+                baseY, 
+                `${skill.name}s`, 
+                {
+                    font: '30px Chiller',
+                    color: '#ffffff'
+                }
+            ).setOrigin(0.5);
+        
+            this.add.text(
+                baseX, 
+                baseY + 20, 
+                `Damage - ${skill.damage}`, 
+                {
+                    font: '20px Chiller',
+                    color: '#ffffff'
+                }
+            ).setOrigin(0.5);
 
+            this.add.text(
+                baseX, 
+                baseY + 40, 
+                `Proficiency - ${skill.proficiency}%`, 
+                {
+                    font: '20px Chiller',
+                    color: '#ffffff'
+                }
+            ).setOrigin(0.5);
+        });
+        
         this.add.text(680, 50, 'PowerUps ', {
             font: '60px Chiller',
             color: '#ffffff'

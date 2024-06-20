@@ -995,7 +995,7 @@ export default class GameScene extends Phaser.Scene {
         const radius = 100;
 
         this.selectedSkills.forEach(skill => {
-            if (skill.skillKey === 'darkAttack' && skill.proficiency <=100) {
+            if (skill.skillKey === 'darkBoltAttack' && skill.proficiency <=100) {
                 skill.proficiency++;
                 skill.damage  *= 1 + skill.proficiency/100 ;
                 this.darkBoltAttackDamage = skill.damage;
