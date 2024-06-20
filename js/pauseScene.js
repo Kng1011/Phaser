@@ -28,7 +28,7 @@ export default class PauseScene extends Phaser.Scene {
         this.add.text(400, 250, 'Stats', {
             fontSize: '32px',
             color: '#ffffff'
-        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.Leave());
+        }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.Stats());
 
         this.add.text(400, 350, 'Leave', {
             fontSize: '32px',
@@ -40,6 +40,11 @@ export default class PauseScene extends Phaser.Scene {
     Continue() {
         this.scene.stop();
         this.scene.resume('GameScene');
+    }
+
+    Stats() {
+        this.scene.pause();
+        this.scene.launch('StatsScene', { playerAttributes: this.playerAttributes });
     }
 
     Leave() {

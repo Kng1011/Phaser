@@ -3,6 +3,7 @@ import GameOverScene from './again.js';
 import MenuScene from './menu.js';
 import ControlsScene from './controls.js';
 import PauseScene from './pauseScene.js';
+import StatsScene from './statsScene.js';
 
 import SkillSelectionScene from './skillSelection.js';
 import PowerUpSelectionScene from './powerUpSelection.js'; 
@@ -20,7 +21,8 @@ const config = {
         }
     },
 
-    scene: [MenuScene, SkillSelectionScene, PowerUpSelectionScene, GameScene, GameOverScene, ControlsScene, PauseScene]
+    scene: [MenuScene, SkillSelectionScene, PowerUpSelectionScene, GameScene,
+         GameOverScene, ControlsScene, PauseScene, StatsScene]
 };
 
 var game = new Phaser.Game(config);
