@@ -664,7 +664,7 @@ export default class GameScene extends Phaser.Scene {
         if (!this.anims.exists('zombieWalkBackwards')) {
             this.anims.create({
                 key: 'zombieWalkBackwards',
-                frames: this.anims.generateFrameNumbers('zombie', { start: 30, end: 99 }),
+                frames: this.anims.generateFrameNumbers('zombie', { start: 6, end: 7 }),
                 frameRate: 10,
                 repeat: -1
             });
@@ -1258,6 +1258,8 @@ export default class GameScene extends Phaser.Scene {
             }
     
             this.scene.start('GameOverScene', { score: this.elapsedTime, highScore: this.highScore });
+            this.selectedSkills = [];
+            this.selectedPowerUps = [];
             this.level = 0;
             this.elapsedTime = 0
             this.numberOfEnemies = 0;
