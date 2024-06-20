@@ -36,7 +36,7 @@ export default class ControlsScene extends Phaser.Scene {
             font: '60px Chiller',
             fill: '#ffffff'
         });
-        const A = this.add.text(690, 320, 'Q', {
+        const A = this.add.text(690, 320, 'H', {
             font: '60px Chiller',
             fill: '#ffffff'
         });
