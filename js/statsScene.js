@@ -19,57 +19,57 @@ export default class StatsScene extends Phaser.Scene{
     create() {
         this.cameras.main.setBackgroundColor('#000000');
 
-        this.add.text(120, 150, 'Player Stats', {
-            fontSize: '20px',
+        this.add.text(150, 50, 'Player Stats', {
+            font: '60px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        this.add.text(120, 200, 'Speed: ' + this.playerAttributes.playerSpeed, {
-            fontSize: '15px',
+        this.add.text(150, 125, 'Speed: ' + this.playerAttributes.playerSpeed, {
+            font: '30px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        this.add.text(120, 250, 'Attack: ' + this.playerAttributes.playerAttack, {
-            fontSize: '15px',
+        this.add.text(150, 175, 'Attack: ' + this.playerAttributes.playerAttack, {
+            font: '30px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        this.add.text(120, 300, 'Attack Speed: ' + this.playerAttributes.playerAttackSpeed, {
-            fontSize: '15px',
+        this.add.text(150, 225, 'Attack Speed: ' + this.playerAttributes.playerAttackSpeed, {
+            font: '30px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        this.add.text(120, 350, 'Health: ' + this.playerAttributes.playerHealth + '/' + this.playerAttributes.playerMaxHealth, {
-            fontSize: '15px',
+        this.add.text(150, 275, 'Health: ' + this.playerAttributes.playerHealth + '/' + this.playerAttributes.playerMaxHealth, {
+            font: '30px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        this.add.text(400, 150, 'Skills ', {
-            fontSize: '20px',
+        this.add.text(430, 50, 'Skills ', {
+            font: '60px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
 
         this.playerAttributes.selectedSkills.forEach((skill, index) => {
-            this.add.text(400, 150 + 50 * (index + 1), skill.name, {
-                fontSize: '15px',
+            this.add.text(430, 75 + 50 * (index + 1), skill.name, {
+                font: '30px Chiller',
                 color: '#ffffff'
             }).setOrigin(0.5);
         });
 
-        this.add.text(650, 150, 'PowerUps ', {
-            fontSize: '15px',
+        this.add.text(680, 50, 'PowerUps ', {
+            font: '60px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5);
 
         this.playerAttributes.selectedPowerUps.forEach((powerUp, index) => {
-            this.add.text(650, 150 + 50 * (index + 1), powerUp.name, {
-                fontSize: '20px',
+            this.add.text(680, 75 + 50 * (index + 1), powerUp.name, {
+                font: '30px Chiller',
                 color: '#ffffff'
             }).setOrigin(0.5);
         });
 
-        this.add.text(400, 400, 'Back', {
-            fontSize: '32px',
+        this.add.text(100, 550, '< Back', {
+            font: '64px Chiller',
             color: '#ffffff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.Back());   
     }

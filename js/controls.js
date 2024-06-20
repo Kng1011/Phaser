@@ -80,7 +80,7 @@ export default class ControlsScene extends Phaser.Scene {
         skillGraphic3.setDepth(11);
 
         // Adicionando o botão de voltar
-        const backButton = this.add.text(400, 520, 'Back', {
+        const backButton = this.add.text(100, 550, '< Back', {
             font: '64px Chiller',
             fill: '#fff'
         }).setOrigin(0.5).setInteractive().on('pointerdown', () => this.backMenu());
