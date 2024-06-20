@@ -1353,7 +1353,7 @@ spawnEnemy(enemyTypeKey) {
         if(this.lightRadius == 0){
             if (this.elapsedTime > this.highScore) {
                 this.highScore = this.elapsedTime;
-                localStorage.setItem('highScore', this.highScore); // Salva o novo high score no localStorage
+                localStorage.setItem('highScore', this.highScore); 
             }
     
             this.scene.start('GameOverScene', { score: this.elapsedTime, highScore: this.highScore });
