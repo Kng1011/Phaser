@@ -56,8 +56,8 @@ export default class StatsScene extends Phaser.Scene{
 
         this.playerAttributes.selectedSkills.forEach((skill, index) => {
             const baseX = 430;
-            const baseY = 75; 
-            const textSpacing = 75; 
+            const baseY = 90; 
+            const textSpacing = 100; 
             const skillBlockHeight = 150;
         
             this.add.text(

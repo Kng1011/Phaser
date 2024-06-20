@@ -150,7 +150,11 @@ export default class GameScene extends Phaser.Scene {
             }
         });
 
+        this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
+
         this.player = this.physics.add.sprite(400, 300, 'player').setScale(2);
+
+        this.player.setCollideWorldBounds(true);
 
         this.enemies = [
             {
@@ -289,7 +293,7 @@ export default class GameScene extends Phaser.Scene {
         this.lightFlash.setAlpha(0);
 
         this.selectedPowerUps.forEach(powerUp => {
-            this.applyPowerUp(powerUp.powerUpKey);
+            this.applyPowerUp(powerUp.powerUpKey, powerUp.number);
         });
 
         //this.physics.world.createDebugGraphic();
@@ -316,49 +320,49 @@ export default class GameScene extends Phaser.Scene {
         this.playerAttributes.selectedPowerUps = this.selectedPowerUps;
     }
 
-    applyPowerUp(powerUp) {
+    applyPowerUp(powerUp, number) {
         if (powerUp === 'health') {
             this.playerMaxHealth = 150;
             this.playerHealth = 150;    
             
-            if (powerUp.number > 0){
-                this.playerHealth = this.playerHealth + (20 * powerUp.number);
+            if (number > 0){
+                this.playerHealth = this.playerHealth + (20 *number);
             }
         } else if (powerUp === 'attack') {  
             this.playerAttack = 55;
 
-            if (powerUp.number > 0){
-                this.playerAttack = this.playerAttack + (3 * powerUp.number);
+            if (number > 0){
+                this.playerAttack = this.playerAttack + (3 * number);
             }
 
         } else if (powerUp === 'speed') {
             this.playerSpeed = 300;
 
-            if (powerUp.number > 0){
-                this.playerSpeed = this.playerSpeed + (5 * powerUp.number);
+            if (number > 0){
+                this.playerSpeed = this.playerSpeed + (5 * number);
             }
         } else if (powerUp === 'attackSpeed') {
             this.playerAttackSpeed = 20;
 
-            if (powerUp.number > 0){
-                this.playerAttackSpeed = this.playerAttackSpeed + (2 * powerUp.number);
+            if (number > 0){
+                this.playerAttackSpeed = this.playerAttackSpeed + (2 * number);
             }
         } else if (powerUp === 'cooldownReduction') {
             this.fireballCooldownTime = 1000;
             this.darkAttacksCooldownTime = 2000;
             this.darkBoltAttackCooldownTime = 4000;
 
-            if (powerUp.number > 0){
-                this.fireballCooldownTime = this.fireballCooldownTime - (50 * powerUp.number);
-                this.darkAttacksCooldownTime = thiis.darkAttacksCooldownTime - (50 * powerUp.number);
-                this.darkBoltAttackCooldownTime = this.darkBoltAttackCooldownTime - (50 * powerUp.number);
+            if (number > 0){
+                this.fireballCooldownTime = this.fireballCooldownTime - (50 * number);
+                this.darkAttacksCooldownTime = thiis.darkAttacksCooldownTime - (50 * number);
+                this.darkBoltAttackCooldownTime = this.darkBoltAttackCooldownTime - (50 * number);
             }
 
         } else if (powerUp === 'healOnKill') {
             this.healHeath = 10;
 
-            if (powerUp.number > 0){
-                this.healHeath = this.healHeath + (2 * powerUp.number);
+            if (number > 0){
+                this.healHeath = this.healHeath + (2 *number);
             }
 
         }
@@ -993,7 +997,7 @@ spawnEnemy(enemyTypeKey) {
             this.selectedPowerUps.forEach(powerUp => {
                 if (powerUp.powerUpKey === randomPowerUp) {
                     powerUp.number++;
-                    this.applyPowerUp(powerUp.powerUpKey);
+                    this.applyPowerUp(powerUp.key, powerUp.number);
                 }
 
             });
@@ -1271,8 +1275,6 @@ spawnEnemy(enemyTypeKey) {
         }
     }
     
-
-
     updatePlayerHealthBar() {
         const healthPercentage = this.playerHealth / this.playerMaxHealth;
         const newWidth = this.playerHealthBarBg.displayWidth * healthPercentage;
@@ -1282,7 +1284,7 @@ spawnEnemy(enemyTypeKey) {
             if (this.elapsedTime > this.highScore) {
                 this.highScore = this.elapsedTime;
                 console.log(this.highScore);
-                localStorage.setItem('highScore', this.highScore); // Salva o novo high score no localStorage
+                localStorage.setItem('highScore', this.highScore); 
             }
     
             this.scene.start('GameOverScene', { score: this.elapsedTime, highScore: this.highScore });
