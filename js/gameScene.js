@@ -99,6 +99,8 @@ export default class GameScene extends Phaser.Scene {
         this.load.spritesheet('zombie', 'assets/ZombieSheet.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('troll', 'assets/TrollSheet.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('skeleton', 'assets/SkeletonSheet.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('boss', 'assets/BossEnemyWalk.png', { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('bossAttack', 'assets/BossEnemySwipe.png', { frameWidth: 64, frameHeight: 64 });
     }
 
     init(data) {
@@ -174,6 +176,14 @@ export default class GameScene extends Phaser.Scene {
                 speed: 90,
                 attackSpeed: 2000,
                 attackRange: 20
+            },
+            {
+                key: 'boss',
+                health: 1000,
+                attack: 12,
+                speed: 100,
+                attackSpeed: 3000,
+                attackRange: 30
             }
         ]
 
@@ -282,13 +292,8 @@ export default class GameScene extends Phaser.Scene {
             this.applyPowerUp(powerUp.powerUpKey);
         });
 
-        this.physics.world.createDebugGraphic();
+        //this.physics.world.createDebugGraphic();
 
-        this.fireballs.children.iterate((fireball) => {
-            this.physics.world.enableBody(fireball, Phaser.Physics.Arcade.DYNAMIC_BODY);
-            fireball.body.setCircle(15);  
-        });
-    
         this.time.addEvent({
             delay: 1000,
             callback: this.updateElapsedTime,
@@ -407,24 +412,24 @@ export default class GameScene extends Phaser.Scene {
     
         if (this.cursors.left.isDown || this.wasd.left.isDown) {
             this.player.setVelocityX(-this.playerSpeed);
-            this.player.anims.play('walkleft', true);
+            if (!attack) this.player.anims.play('walkleft', true);
             this.direction = 'left';
             isMoving = true;
         } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
             this.player.setVelocityX(this.playerSpeed);
-            this.player.anims.play('walkright', true);
+            if (!attack) this.player.anims.play('walkright', true);
             this.direction = 'right';
             isMoving = true;
         }
     
         if (this.cursors.up.isDown || this.wasd.up.isDown) {
             this.player.setVelocityY(-this.playerSpeed);
-            this.player.anims.play('walkforward', true);
+            if (!attack) this.player.anims.play('walkforward', true);
             this.direction = 'forward';
             isMoving = true;
         } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
             this.player.setVelocityY(this.playerSpeed);
-            this.player.anims.play('walkbackwards', true);
+            if (!attack) this.player.anims.play('walkbackwards', true);
             this.direction = 'backwards';
             isMoving = true;
         }
@@ -438,10 +443,10 @@ export default class GameScene extends Phaser.Scene {
                 }
             });
         }
-
-        if(Phaser.Input.Keyboard.JustDown(this.pauseKey)){
+    
+        if (Phaser.Input.Keyboard.JustDown(this.pauseKey)) {
             this.scene.pause();
-            this.scene.launch('PauseScene', {playerAttributes: this.playerAttributes});
+            this.scene.launch('PauseScene', { playerAttributes: this.playerAttributes });
         }
     
         if (this.player.anims.currentAnim && this.player.anims.currentAnim.key.startsWith('attack') && this.player.anims.isPlaying) {
@@ -473,15 +478,38 @@ export default class GameScene extends Phaser.Scene {
         this.enemiesGroupOnField.children.iterate((enemy) => {
             if (enemy && enemy.active) {
                 const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y);
-    
+        
                 if (distance < enemy.attackRange) {
                     enemy.setVelocity(0, 0);
-    
-                    if (enemy.anims.currentAnim && enemy.anims.currentAnim.key !== enemy.key + 'Attack') {
-                        enemy.anims.play(enemy.key + 'Attack', true);
-                        enemy.isAttacking = true;
+        
+                    if (enemy.key !== 'boss') {
+                        if (enemy.anims.currentAnim && enemy.anims.currentAnim.key !== enemy.key + 'Attack') {
+                            enemy.anims.play(enemy.key + 'Attack', true);
+                            enemy.isAttacking = true;
+                        }
+                    } else {
+                        let bossAttackAnimationKey;
+                        switch (this.direction) {
+                            case 'left':
+                                bossAttackAnimationKey = 'bossAttackLeft';
+                                break;
+                            case 'right':
+                                bossAttackAnimationKey = 'bossAttackRight';
+                                break;
+                            case 'forward':
+                                bossAttackAnimationKey = 'bossAttackForward';
+                                break;
+                            case 'backwards':
+                                bossAttackAnimationKey = 'bossAttackBackwards';
+                                break;
+                        }
+        
+                        if (enemy.anims.currentAnim && enemy.anims.currentAnim.key !== bossAttackAnimationKey) {
+                            enemy.anims.play(bossAttackAnimationKey, true);
+                            enemy.isAttacking = true;
+                        }
                     }
-    
+        
                     if (enemy.isAttacking && enemy.anims.currentFrame && enemy.anims.currentFrame.isLast) {
                         if (!enemy.hasAttacked) {
                             this.applyDamageToPlayer(enemy);
@@ -494,10 +522,11 @@ export default class GameScene extends Phaser.Scene {
                     this.physics.moveToObject(enemy, this.player, enemy.speed);
                     this.updateEnemyAnimation(enemy.body.velocity, enemy);
                 }
-    
+        
                 this.updateEnemyHealthBar(enemy);
             }
         });
+        
     
         if (this.enemiesOnField < this.numberOfEnemies) {
             this.spawnEnemy(this.enemyType.key);
@@ -508,6 +537,7 @@ export default class GameScene extends Phaser.Scene {
         this.killCountText.setText(`Kills: ${this.killCount} / ${this.maxKills}`);
     }
     
+    
 
     applyDamageToPlayer(enemy) {
         if (this.playerHealth > 0) {
@@ -517,21 +547,23 @@ export default class GameScene extends Phaser.Scene {
     }
 
     updateEnemyAnimation(velocity, enemy) {
-        if (velocity.x > 0) {
+        if (this.direction === 'right') {
             enemy.anims.play(enemy.key + 'WalkRight', true);
-        } else if (velocity.x < 0) {
+        } else if (this.direction === 'left') {
             enemy.anims.play(enemy.key + 'WalkLeft', true);
         }
     
-        if (velocity.y > 0) {
+        if (this.direction === 'backwards') {
             enemy.anims.play(enemy.key + 'WalkBackwards', true);
-        } else if (velocity.y < 0) {
+        } else if (this.direction === 'forward') {
             enemy.anims.play(enemy.key + 'WalkForward', true);
         }
+    
         if (velocity.x === 0 && velocity.y === 0) {
-            enemy.anims.stop(); 
+            enemy.anims.stop();
         }
-    }
+    }   
+    
       
 
     setupEnemyAnimation(enemyType) {
@@ -545,16 +577,94 @@ export default class GameScene extends Phaser.Scene {
             case 'skeleton':
                 this.setupSkeletonAnimations();
                 break;
+            case 'boss':
+                this.setupBossAnimations();
+                break;
             default:
                 return;
         }
+    }
+
+    setupBossAnimations() {
+        if (!this.anims.exists('bossWalkBackwards')) {
+            this.anims.create({
+                key: 'bossWalkBackwards',
+                frames: this.anims.generateFrameNumbers('boss', { start: 30, end: 39 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('bossWalkForward')) {
+            this.anims.create({
+                key: 'bossWalkForward',
+                frames: this.anims.generateFrameNumbers('boss', { start: 0, end: 9 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('bossWalkRight')) {
+            this.anims.create({
+                key: 'bossWalkRight',
+                frames: this.anims.generateFrameNumbers('boss', { start: 20, end: 29 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('bossWalkLeft')) {
+            this.anims.create({
+                key: 'bossWalkLeft',
+                frames: this.anims.generateFrameNumbers('boss', { start: 10, end: 19 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('bossAttackBackwards')) {
+            this.anims.create({
+                key: 'bossAttackBackwards',
+                frames: this.anims.generateFrameNumbers('bossAttack', { start: 30, end: 39 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('bossAttackForward')) {
+            this.anims.create({
+                key: 'bossAttackForward',
+                frames: this.anims.generateFrameNumbers('bossAttack', { start: 0, end: 9 }),
+                frameRate: 5,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('bossAttackRight')) {
+            this.anims.create({
+                key: 'bossAttackRight',
+                frames: this.anims.generateFrameNumbers('bossAttack', { start: 20, end: 29 }),
+                frameRate: 5,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('bossAttackLeft')) {
+            this.anims.create({
+                key: 'bossAttackLeft',
+                frames: this.anims.generateFrameNumbers('bossAttack', { start: 10, end: 19 }),
+                frameRate: 5,
+                repeat: -1
+            });
+        }
+
     }
     
     setupZombieAnimations() {
         if (!this.anims.exists('zombieWalkBackwards')) {
             this.anims.create({
                 key: 'zombieWalkBackwards',
-                frames: this.anims.generateFrameNumbers('zombie', { start: 6, end: 7 }),
+                frames: this.anims.generateFrameNumbers('zombie', { start: 30, end: 99 }),
                 frameRate: 10,
                 repeat: -1
             });
@@ -563,7 +673,7 @@ export default class GameScene extends Phaser.Scene {
         if (!this.anims.exists('zombieWalkForward')) {
             this.anims.create({
                 key: 'zombieWalkForward',
-                frames: this.anims.generateFrameNumbers('zombie', { start: 10, end: 11 }),
+                frames: this.anims.generateFrameNumbers('zombie', { start: 0, end: 9 }),
                 frameRate: 10,
                 repeat: -1
             });
@@ -829,6 +939,7 @@ export default class GameScene extends Phaser.Scene {
         newEnemy.key = enemyTypeKey;
         newEnemy.healthBar = this.add.graphics();
         newEnemy.setMask(this.mask2);
+        newEnemy.healthBar.setMask(this.mask2);
         newEnemy.setActive(true).setVisible(true);
 
         this.setupEnemyAnimation(newEnemy.key);
