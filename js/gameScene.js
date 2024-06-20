@@ -1087,6 +1087,7 @@ export default class GameScene extends Phaser.Scene {
 
         if(this.playerHealth <= 0){
             this.scene.start('GameOverScene');
+            this.level = 0;
         }
         console.log(this.playerHealth);
     }
